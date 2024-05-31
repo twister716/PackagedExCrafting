@@ -1,1 +1,1 @@
-Fix transferring of lower tier recipes in encoder  
+Use global registry access instead of world  

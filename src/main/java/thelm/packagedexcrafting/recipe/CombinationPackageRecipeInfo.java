@@ -158,7 +158,7 @@ public class CombinationPackageRecipeInfo implements ICombinationPackageRecipeIn
 			List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
 			toCondense.add(inputCore);
 			this.input.addAll(MiscHelper.INSTANCE.condenseStacks(toCondense));
-			this.output = recipe.assemble(matrix, level.registryAccess()).copy();
+			this.output = recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
 			for(int i = 0; i*9 < this.input.size(); ++i) {
 				patterns.add(new PackagePattern(this, i));
 			}
