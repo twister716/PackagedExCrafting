@@ -31,7 +31,7 @@ public class CombinationCrafterScreen extends BaseScreen<CombinationCrafterMenu>
 	@Override
 	protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
 		String s = menu.blockEntity.getDisplayName().getString();
-		graphics.drawString(font, s,  Math.max(25, imageWidth/2 - font.width(s)/2), 6, 0x404040, false);
+		graphics.drawString(font, s, Math.max(25, imageWidth/2 - font.width(s)/2), 6, 0x404040, false);
 		graphics.drawString(font, menu.inventory.getDisplayName().getString(), menu.getPlayerInvX(), menu.getPlayerInvY()-11, 0x404040, false);
 		if(mouseX-leftPos >= 10 && mouseY-topPos >= 10 && mouseX-leftPos <= 21 && mouseY-topPos <= 49) {
 			graphics.renderTooltip(font, Component.literal(menu.blockEntity.getEnergyStorage().getEnergyStored()+" / "+menu.blockEntity.getEnergyStorage().getMaxEnergyStored()+" FE"), mouseX-leftPos, mouseY-topPos);

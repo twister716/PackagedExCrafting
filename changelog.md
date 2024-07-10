@@ -1,1 +1,1 @@
-Use global registry access instead of world  
+Fix Combination Crafter rendered item not being updated  
