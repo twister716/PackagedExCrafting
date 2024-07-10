@@ -142,7 +142,6 @@ public class TileCombinationCrafter extends TileBase implements ITickable, IPack
 					((TileMarkedPedestal)world.getTileEntity(pedestals.get(i))).getInventory().
 					setInventorySlotContents(0, pedestalInputs.get(i).copy());
 				}
-				syncTile(false);
 				markDirty();
 				return true;
 			}
@@ -202,7 +201,6 @@ public class TileCombinationCrafter extends TileBase implements ITickable, IPack
 		pedestals.clear();
 		isWorking = false;
 		currentRecipe = null;
-		syncTile(false);
 		markDirty();
 	}
 
