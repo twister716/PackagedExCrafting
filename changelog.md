@@ -1,1 +1,1 @@
-Fix marked pedestals not connecting to ME systems on placement  
+Fix Combination Crafter rendered item not being updated  

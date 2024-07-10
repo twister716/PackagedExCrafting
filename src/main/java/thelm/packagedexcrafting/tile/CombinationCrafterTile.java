@@ -122,7 +122,6 @@ public class CombinationCrafterTile extends BaseTile implements ITickableTileEnt
 					((MarkedPedestalTile)level.getBlockEntity(pedestals.get(i))).getItemHandler().
 					setStackInSlot(0, pedestalInputs.get(i).copy());
 				}
-				syncTile(false);
 				setChanged();
 				return true;
 			}
@@ -184,7 +183,6 @@ public class CombinationCrafterTile extends BaseTile implements ITickableTileEnt
 		pedestals.clear();
 		isWorking = false;
 		currentRecipe = null;
-		syncTile(false);
 		setChanged();
 	}
 
