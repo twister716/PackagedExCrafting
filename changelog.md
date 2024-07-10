@@ -1,1 +1,1 @@
-Fix transferring of lower tier recipes in encoder  
+Fix Combination Crafter rendered item not being updated  
