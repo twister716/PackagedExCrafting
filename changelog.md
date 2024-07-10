@@ -1,1 +1,1 @@
-Remove redundant tier check in basic recipe transferring  
+Fix Combination Crafter rendered item not being updated  

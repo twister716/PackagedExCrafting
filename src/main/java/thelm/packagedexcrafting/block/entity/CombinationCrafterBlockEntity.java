@@ -122,7 +122,6 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 					((MarkedPedestalBlockEntity)level.getBlockEntity(pedestals.get(i))).getItemHandler().
 					setStackInSlot(0, pedestalInputs.get(i).copy());
 				}
-				sync(false);
 				setChanged();
 				return true;
 			}
@@ -184,7 +183,6 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 		pedestals.clear();
 		isWorking = false;
 		currentRecipe = null;
-		sync(false);
 		setChanged();
 	}
 
