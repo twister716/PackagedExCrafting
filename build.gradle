@@ -1,5 +1,5 @@
 plugins {
-	id "com.crystaelix.loom" version "jitpack-6453f0f4"
+	id "com.crystaelix.loom" version "jitpack-ae847f1f"
 	id "eclipse"
 	id "idea"
 	id "maven-publish"
@@ -109,10 +109,10 @@ dependencies {
 
 	// Dependencies
 	modImplementation "curse.maven:packagedauto-308380:5505111"
-	modImplementation "curse.maven:cucumber-272335:5228968"
+	modImplementation "curse.maven:cucumber-272335:5502065"
 	modImplementation "curse.maven:extended-crafting-268387:5228960"
-	modImplementation("mezz.jei:jei-1.20.1-forge:15.3.0.8") {transitive = false}
-	modImplementation "appeng:appliedenergistics2-forge:15.2.4"
+	modImplementation("mezz.jei:jei-1.20.1-forge:15.8.0.16") {transitive = false}
+	modImplementation "appeng:appliedenergistics2-forge:15.2.9"
 	modImplementation "vazkii.patchouli:Patchouli:1.20.1-84-FORGE"
 
 	// Testing
@@ -122,7 +122,7 @@ dependencies {
 	//Performance
 	modImplementation "curse.maven:yeetusexperimentus-635427:4680832"
 	implementation "io.github.llamalad7:mixinextras-forge:0.3.6"
-	modImplementation "curse.maven:modernfix-790626:5425647"
+	modImplementation "curse.maven:modernfix-790626:5541516"
 	modImplementation "curse.maven:ferritecore-429235:4810975"
 }
 
