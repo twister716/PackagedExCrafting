@@ -1,5 +1,5 @@
 plugins {
-	id "com.crystaelix.loom" version "jitpack-6453f0f4"
+	id "com.crystaelix.loom" version "jitpack-ae847f1f"
 	id "eclipse"
 	id "idea"
 	id "maven-publish"
@@ -108,7 +108,7 @@ dependencies {
 	modImplementation "curse.maven:packagedauto-308380:5505108"
 	modImplementation "curse.maven:cucumber-272335:4773184"
 	modImplementation "curse.maven:extended-crafting-268387:4991289"
-	modImplementation("mezz.jei:jei-1.19.2-forge:11.6.0.1020") {transitive = false}
+	modImplementation("mezz.jei:jei-1.19.2-forge:11.6.0.1024") {transitive = false}
 	modImplementation "appeng:appliedenergistics2-forge:12.9.8"
 	modImplementation "vazkii.patchouli:Patchouli:1.19.2-77"
 
