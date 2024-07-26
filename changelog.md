@@ -1,1 +1,1 @@
-Fix Combination Crafter rendered item not being updated  
+Allow loading of invalid recipes and add validity checks  
