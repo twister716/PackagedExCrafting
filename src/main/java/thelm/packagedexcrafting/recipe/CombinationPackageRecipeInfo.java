@@ -42,23 +42,20 @@ public class CombinationPackageRecipeInfo implements ICombinationPackageRecipeIn
 		MiscHelper.INSTANCE.loadAllItems(nbt.getList("InputPedestal", 10), inputPedestal);
 		patterns.clear();
 		Recipe<?> recipe = MiscHelper.INSTANCE.getRecipeManager().byKey(new ResourceLocation(nbt.getString("Recipe"))).orElse(null);
-		if(inputPedestal.isEmpty()) {
-			return;
+		List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
+		toCondense.add(inputCore);
+		input.addAll(MiscHelper.INSTANCE.condenseStacks(toCondense));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PackagePattern(this, i));
 		}
 		if(recipe instanceof ICombinationRecipe combinationRecipe) {
 			this.recipe = combinationRecipe;
-			List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
-			toCondense.add(inputCore);
-			input.addAll(MiscHelper.INSTANCE.condenseStacks(toCondense));
 			Container matrix = new SimpleContainer(inputPedestal.size()+1);
 			matrix.setItem(0, inputCore);
 			for(int i = 0; i < inputPedestal.size(); ++i) {
 				matrix.setItem(i+1, inputPedestal.get(i));
 			}
 			output = this.recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
-			for(int i = 0; i*9 < input.size(); ++i) {
-				patterns.add(new PackagePattern(this, i));
-			}
 		}
 	}
 

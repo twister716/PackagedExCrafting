@@ -24,6 +24,7 @@ public interface ICombinationPackageRecipeInfo extends IPackageRecipeInfo {
 
 	@Override
 	default List<ItemStack> getOutputs() {
-		return Collections.singletonList(getOutput());
+		ItemStack output = getOutput();
+		return output.isEmpty() ? List.of() : List.of(output);
 	}
 }
