@@ -29,7 +29,7 @@ public class CombinationPackageRecipeInfo implements ICombinationPackageRecipeIn
 	ItemStack inputCore = ItemStack.EMPTY;
 	List<ItemStack> inputPedestal = new ArrayList<>();
 	List<ItemStack> input = new ArrayList<>();
-	ItemStack output;
+	ItemStack output = ItemStack.EMPTY;
 	List<IPackagePattern> patterns = new ArrayList<>();
 
 	@Override
@@ -41,23 +41,20 @@ public class CombinationPackageRecipeInfo implements ICombinationPackageRecipeIn
 		MiscHelper.INSTANCE.loadAllItems(nbt.getList("InputPedestal", 10), inputPedestal);
 		patterns.clear();
 		IRecipe<?> recipe = MiscHelper.INSTANCE.getRecipeManager().byKey(new ResourceLocation(nbt.getString("Recipe"))).orElse(null);
-		if(inputPedestal.isEmpty()) {
-			return;
+		List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
+		toCondense.add(inputCore);
+		input.addAll(MiscHelper.INSTANCE.condenseStacks(toCondense));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PackagePattern(this, i));
 		}
 		if(recipe instanceof ICombinationRecipe) {
 			this.recipe = (ICombinationRecipe)recipe;
-			List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
-			toCondense.add(inputCore);
-			input.addAll(MiscHelper.INSTANCE.condenseStacks(toCondense));
 			Inventory matrix = new Inventory(inputPedestal.size()+1);
 			matrix.setItem(0, inputCore);
 			for(int i = 0; i < inputPedestal.size(); ++i) {
 				matrix.setItem(i+1, inputPedestal.get(i));
 			}
 			output = this.recipe.assemble(matrix).copy();
-			for(int i = 0; i*9 < input.size(); ++i) {
-				patterns.add(new PackagePattern(this, i));
-			}
 		}
 	}
 

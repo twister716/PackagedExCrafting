@@ -84,7 +84,7 @@ public class EnderCrafterTile extends BaseTile implements ITickableTileEntity, I
 
 	@Override
 	public boolean acceptPackage(IPackageRecipeInfo recipeInfo, List<ItemStack> stacks, Direction direction) {
-		if(!isBusy() && recipeInfo instanceof IEnderPackageRecipeInfo) {
+		if(!isBusy() && recipeInfo.isValid() && recipeInfo instanceof IEnderPackageRecipeInfo) {
 			IEnderPackageRecipeInfo recipe = (IEnderPackageRecipeInfo)recipeInfo;
 			ItemStack slotStack = itemHandler.getStackInSlot(9);
 			ItemStack outputStack = recipe.getOutput();

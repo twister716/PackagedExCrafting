@@ -77,7 +77,7 @@ public class AdvancedCrafterTile extends BaseTile implements ITickableTileEntity
 
 	@Override
 	public boolean acceptPackage(IPackageRecipeInfo recipeInfo, List<ItemStack> stacks, Direction direction) {
-		if(!isBusy() && recipeInfo instanceof ITablePackageRecipeInfo) {
+		if(!isBusy() && recipeInfo.isValid() && recipeInfo instanceof ITablePackageRecipeInfo) {
 			ITablePackageRecipeInfo recipe = (ITablePackageRecipeInfo)recipeInfo;
 			if(recipe.getTier() == 2) {
 				ItemStack slotStack = itemHandler.getStackInSlot(25);
