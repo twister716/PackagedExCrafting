@@ -106,7 +106,7 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 
 	@Override
 	public boolean acceptPackage(IPackageRecipeInfo recipeInfo, List<ItemStack> stacks, Direction direction) {
-		if(!isBusy() && recipeInfo instanceof ICombinationPackageRecipeInfo recipe) {
+		if(!isBusy() && recipeInfo.isValid() && recipeInfo instanceof ICombinationPackageRecipeInfo recipe) {
 			List<ItemStack> pedestalInputs = recipe.getPedestalInputs();
 			List<BlockPos> emptyPedestals = getEmptyPedestals();
 			requiredPedestals = Math.max(requiredPedestals, pedestalInputs.size());
@@ -192,7 +192,7 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 				return pos.immutable();
 			}
 			return null;
-		}).filter(Predicates.notNull()).collect(Collectors.toList());
+		}).filter(Predicates.notNull()).toList();
 	}
 
 	protected void ejectItems() {

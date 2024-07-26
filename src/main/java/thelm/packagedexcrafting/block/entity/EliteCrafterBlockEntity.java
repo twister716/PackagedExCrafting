@@ -79,7 +79,7 @@ public class EliteCrafterBlockEntity extends BaseBlockEntity implements IPackage
 
 	@Override
 	public boolean acceptPackage(IPackageRecipeInfo recipeInfo, List<ItemStack> stacks, Direction direction) {
-		if(!isBusy() && recipeInfo instanceof ITablePackageRecipeInfo recipe) {
+		if(!isBusy() && recipeInfo.isValid() && recipeInfo instanceof ITablePackageRecipeInfo recipe) {
 			if(recipe.getTier() == 3) {
 				ItemStack slotStack = itemHandler.getStackInSlot(49);
 				ItemStack outputStack = recipe.getOutput();

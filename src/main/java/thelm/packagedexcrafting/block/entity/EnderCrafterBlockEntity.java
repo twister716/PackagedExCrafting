@@ -89,7 +89,7 @@ public class EnderCrafterBlockEntity extends BaseBlockEntity implements IPackage
 
 	@Override
 	public boolean acceptPackage(IPackageRecipeInfo recipeInfo, List<ItemStack> stacks, Direction direction) {
-		if(!isBusy() && recipeInfo instanceof IEnderPackageRecipeInfo recipe) {
+		if(!isBusy() && recipeInfo.isValid() && recipeInfo instanceof IEnderPackageRecipeInfo recipe) {
 			ItemStack slotStack = itemHandler.getStackInSlot(9);
 			ItemStack outputStack = recipe.getOutput();
 			if(slotStack.isEmpty() || ItemStack.isSameItemSameTags(slotStack, outputStack) && slotStack.getCount()+outputStack.getCount() <= outputStack.getMaxStackSize()) {

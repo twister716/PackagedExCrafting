@@ -22,6 +22,7 @@ public interface IEnderPackageRecipeInfo extends IPackageRecipeInfo {
 
 	@Override
 	default List<ItemStack> getOutputs() {
-		return List.of(getOutput());
+		ItemStack output = getOutput();
+		return output.isEmpty() ? List.of() : List.of(output);
 	}
 }
