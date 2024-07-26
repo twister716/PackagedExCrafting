@@ -125,7 +125,7 @@ public class TileCombinationCrafter extends TileBase implements ITickable, IPack
 
 	@Override
 	public boolean acceptPackage(IRecipeInfo recipeInfo, List<ItemStack> stacks, EnumFacing facing) {
-		if(!isBusy() && recipeInfo instanceof IRecipeInfoCombination) {
+		if(!isBusy() && recipeInfo.isValid() && recipeInfo instanceof IRecipeInfoCombination) {
 			IRecipeInfoCombination recipe = (IRecipeInfoCombination)recipeInfo;
 			List<ItemStack> pedestalInputs = recipe.getPedestalInputs();
 			List<BlockPos> emptyPedestals = getEmptyPedestals();

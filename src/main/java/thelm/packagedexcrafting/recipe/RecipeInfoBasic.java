@@ -25,7 +25,7 @@ public class RecipeInfoBasic implements IRecipeInfoTiered {
 	IRecipe recipe;
 	List<ItemStack> input = new ArrayList<>();
 	InventoryCrafting matrix = new InventoryCrafting(new ContainerEmpty(), 3, 3);
-	ItemStack output;
+	ItemStack output = ItemStack.EMPTY;
 	List<IPackagePattern> patterns = new ArrayList<>();
 
 	@Override
@@ -38,20 +38,18 @@ public class RecipeInfoBasic implements IRecipeInfoTiered {
 		for(int i = 0; i < 9 && i < matrixList.size(); ++i) {
 			matrix.setInventorySlotContents(i, matrixList.get(i));
 		}
+		input.addAll(MiscUtil.condenseStacks(matrix));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PatternHelper(this, i));
+		}
 		for(Object obj : TableRecipeManager.getInstance().getRecipes(3)) {
 			if(obj instanceof IRecipe) {
 				IRecipe recipe = (IRecipe)obj;
 				if(recipe.matches(matrix, null)) {
 					this.recipe = recipe;
+					output = this.recipe.getCraftingResult(matrix).copy();
 					break;
 				}
-			}
-		}
-		if(recipe != null) {
-			input.addAll(MiscUtil.condenseStacks(matrix));
-			output = recipe.getCraftingResult(matrix).copy();
-			for(int i = 0; i*9 < input.size(); ++i) {
-				patterns.add(new PatternHelper(this, i));
 			}
 		}
 	}

@@ -31,7 +31,7 @@ public class RecipeInfoCombination implements IRecipeInfoCombination {
 	ItemStack inputCore = ItemStack.EMPTY;
 	List<ItemStack> inputPedestal = new ArrayList<>();
 	List<ItemStack> input = new ArrayList<>();
-	ItemStack output;
+	ItemStack output = ItemStack.EMPTY;
 	List<IPackagePattern> patterns = new ArrayList<>();
 
 	@Override
@@ -39,29 +39,26 @@ public class RecipeInfoCombination implements IRecipeInfoCombination {
 		inputPedestal.clear();
 		input.clear();
 		output = ItemStack.EMPTY;
+		patterns.clear();
 		inputCore = new ItemStack(nbt.getCompoundTag("InputCore"));
 		MiscUtil.loadAllItems(nbt.getTagList("InputPedestal", 10), inputPedestal);
-		patterns.clear();
-		if(inputPedestal.isEmpty()) {
-			return;
+		List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
+		toCondense.add(inputCore);
+		input.addAll(MiscUtil.condenseStacks(toCondense));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PatternHelper(this, i));
 		}
-		for(CombinationRecipe recipe : CombinationRecipeManager.getInstance().getRecipes()) {
-			ItemStack inputStack = recipe.getInput();
-			if(!inputStack.isEmpty() && inputStack.isItemEqual(inputCore) && recipe.getPedestalItems().size() == inputPedestal.size()) {
-				List<Ingredient> matchers = Lists.transform(recipe.getPedestalItems(), RecipeInfoCombination::getIngredient);
-				if(RecipeMatcher.findMatches(inputPedestal, matchers) != null) {
-					this.recipe = recipe;
-					break;
+		if(!inputPedestal.isEmpty()) {
+			for(CombinationRecipe recipe : CombinationRecipeManager.getInstance().getRecipes()) {
+				ItemStack inputStack = recipe.getInput();
+				if(!inputStack.isEmpty() && inputStack.isItemEqual(inputCore) && recipe.getPedestalItems().size() == inputPedestal.size()) {
+					List<Ingredient> matchers = Lists.transform(recipe.getPedestalItems(), RecipeInfoCombination::getIngredient);
+					if(RecipeMatcher.findMatches(inputPedestal, matchers) != null) {
+						this.recipe = recipe;
+						output = this.recipe.getOutput().copy();
+						break;
+					}
 				}
-			}
-		}
-		if(recipe != null) {
-			List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
-			toCondense.add(inputCore);
-			input.addAll(MiscUtil.condenseStacks(toCondense));
-			output = recipe.getOutput().copy();
-			for(int i = 0; i*9 < input.size(); ++i) {
-				patterns.add(new PatternHelper(this, i));
 			}
 		}
 	}

@@ -98,7 +98,7 @@ public class TileBasicCrafter extends TileBase implements ITickable, IPackageCra
 
 	@Override
 	public boolean acceptPackage(IRecipeInfo recipeInfo, List<ItemStack> stacks, EnumFacing facing) {
-		if(!isBusy() && recipeInfo instanceof IRecipeInfoTiered) {
+		if(!isBusy() && recipeInfo.isValid() && recipeInfo instanceof IRecipeInfoTiered) {
 			IRecipeInfoTiered recipe = (IRecipeInfoTiered)recipeInfo;
 			if(recipe.getTier() == 1) {
 				ItemStack slotStack = inventory.getStackInSlot(9);
