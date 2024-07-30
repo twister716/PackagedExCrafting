@@ -38,10 +38,6 @@ public class RecipeInfoAdvanced implements IRecipeInfoTiered {
 		for(int i = 0; i < 25 && i < matrixList.size(); ++i) {
 			matrix.setInventorySlotContents(i, matrixList.get(i));
 		}
-		input.addAll(MiscUtil.condenseStacks(matrix));
-		for(int i = 0; i*9 < input.size(); ++i) {
-			patterns.add(new PatternHelper(this, i));
-		}
 		for(Object obj : TableRecipeManager.getInstance().getRecipes(5)) {
 			if(obj instanceof IRecipe) {
 				IRecipe recipe = (IRecipe)obj;
@@ -51,6 +47,10 @@ public class RecipeInfoAdvanced implements IRecipeInfoTiered {
 					break;
 				}
 			}
+		}
+		input.addAll(MiscUtil.condenseStacks(matrix));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PatternHelper(this, i));
 		}
 	}
 

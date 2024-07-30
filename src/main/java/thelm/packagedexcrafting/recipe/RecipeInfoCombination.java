@@ -44,10 +44,6 @@ public class RecipeInfoCombination implements IRecipeInfoCombination {
 		MiscUtil.loadAllItems(nbt.getTagList("InputPedestal", 10), inputPedestal);
 		List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
 		toCondense.add(inputCore);
-		input.addAll(MiscUtil.condenseStacks(toCondense));
-		for(int i = 0; i*9 < input.size(); ++i) {
-			patterns.add(new PatternHelper(this, i));
-		}
 		if(!inputPedestal.isEmpty()) {
 			for(CombinationRecipe recipe : CombinationRecipeManager.getInstance().getRecipes()) {
 				ItemStack inputStack = recipe.getInput();
@@ -60,6 +56,10 @@ public class RecipeInfoCombination implements IRecipeInfoCombination {
 					}
 				}
 			}
+		}
+		input.addAll(MiscUtil.condenseStacks(toCondense));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PatternHelper(this, i));
 		}
 	}
 
