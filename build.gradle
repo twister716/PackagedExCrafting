@@ -67,7 +67,7 @@ def specVersion = "3"
 def vendor = "thelm"
 
 group = "thelm.packagedexcrafting"
-version = "3.4.0.11"
+version = "3.4.0.12"
 
 archivesBaseName = "${modName}-${mcVersion}"
 
@@ -105,7 +105,7 @@ dependencies {
 	forge "net.minecraftforge:forge:1.20.1-47.3.1"
 
 	// Dependencies
-	modImplementation "curse.maven:packagedauto-308380:5570731"
+	modImplementation "curse.maven:packagedauto-308380:5580574"
 	modImplementation "curse.maven:cucumber-272335:5502065"
 	modImplementation "curse.maven:extended-crafting-268387:5228960"
 	modImplementation("mezz.jei:jei-1.20.1-forge:15.8.0.16") {transitive = false}
