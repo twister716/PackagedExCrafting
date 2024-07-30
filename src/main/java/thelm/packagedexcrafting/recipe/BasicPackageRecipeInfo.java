@@ -41,13 +41,13 @@ public class BasicPackageRecipeInfo implements ITablePackageRecipeInfo {
 		for(int i = 0; i < 9 && i < matrixList.size(); ++i) {
 			matrix.setItem(i, matrixList.get(i));
 		}
-		input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
-		for(int i = 0; i*9 < input.size(); ++i) {
-			patterns.add(new PackagePattern(this, i));
-		}
 		if(recipe instanceof ITableRecipe) {
 			this.recipe = (ITableRecipe)recipe;
 			output = this.recipe.assemble(matrix).copy();
+		}
+		input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PackagePattern(this, i));
 		}
 	}
 
