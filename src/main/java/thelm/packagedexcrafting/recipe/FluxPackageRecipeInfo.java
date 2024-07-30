@@ -41,13 +41,13 @@ public class FluxPackageRecipeInfo implements IFluxPackageRecipeInfo {
 		for(int i = 0; i < 9 && i < matrixList.size(); ++i) {
 			matrix.setItem(i, matrixList.get(i));
 		}
-		input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
-		for(int i = 0; i*9 < input.size(); ++i) {
-			patterns.add(new PackagePattern(this, i));
-		}
 		if(recipe instanceof IFluxCrafterRecipe fluxRecipe) {
 			this.recipe = fluxRecipe;
 			output = this.recipe.assemble(matrix).copy();
+		}
+		input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
+		for(int i = 0; i*9 < input.size(); ++i) {
+			patterns.add(new PackagePattern(this, i));
 		}
 	}
 
