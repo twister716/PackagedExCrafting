@@ -19,9 +19,11 @@ import appeng.api.util.AECableType;
 import appeng.api.util.AEPartLocation;
 import appeng.core.Api;
 import appeng.me.helpers.MachineSource;
+import appeng.util.Platform;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.server.ServerWorld;
 import thelm.packagedauto.integration.appeng.networking.BaseGridBlock;
 import thelm.packagedexcrafting.tile.MarkedPedestalTile;
 
@@ -43,7 +45,9 @@ public class AEMarkedPedestalTile extends MarkedPedestalTile implements IGridHos
 	public void tick() {
 		if(firstTick) {
 			firstTick = false;
-			getActionableNode();
+			if(!level.isClientSide) {
+				getActionableNode().updateState();
+			}
 		}
 		super.tick();
 	}
@@ -81,13 +85,12 @@ public class AEMarkedPedestalTile extends MarkedPedestalTile implements IGridHos
 
 	@Override
 	public IGridNode getActionableNode() {
-		if(gridNode == null && level != null && !level.isClientSide) {
+		if(gridNode == null && !Platform.isClient()) {
 			IAppEngApi api = Api.instance();
 			gridNode = api.grid().createGridNode(gridBlock);
 			if(ownerUUID != null) {
 				gridNode.setPlayerID(api.registries().players().getID(new GameProfile(ownerUUID, "[UNKNOWN]")));
 			}
-			gridNode.updateState();
 		}
 		return gridNode;
 	}
@@ -118,7 +121,7 @@ public class AEMarkedPedestalTile extends MarkedPedestalTile implements IGridHos
 	@Override
 	public void load(BlockState blockState, CompoundNBT nbt) {
 		super.load(blockState, nbt);
-		if(level != null && nbt.contains("Node")) {
+		if(nbt.contains("Node")) {
 			getActionableNode().loadFromNBT("Node", nbt);
 		}
 	}
