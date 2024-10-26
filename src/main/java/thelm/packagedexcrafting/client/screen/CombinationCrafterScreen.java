@@ -9,7 +9,7 @@ import thelm.packagedexcrafting.menu.CombinationCrafterMenu;
 
 public class CombinationCrafterScreen extends BaseScreen<CombinationCrafterMenu> {
 
-	public static final ResourceLocation BACKGROUND = new ResourceLocation("packagedexcrafting:textures/gui/combination_crafter.png");
+	public static final ResourceLocation BACKGROUND = ResourceLocation.parse("packagedexcrafting:textures/gui/combination_crafter.png");
 
 	public CombinationCrafterScreen(CombinationCrafterMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);

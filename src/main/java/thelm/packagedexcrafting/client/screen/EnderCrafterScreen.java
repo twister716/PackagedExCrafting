@@ -9,7 +9,7 @@ import thelm.packagedexcrafting.menu.EnderCrafterMenu;
 
 public class EnderCrafterScreen extends BaseScreen<EnderCrafterMenu> {
 
-	public static final ResourceLocation BACKGROUND = new ResourceLocation("packagedexcrafting:textures/gui/ender_crafter.png");
+	public static final ResourceLocation BACKGROUND = ResourceLocation.parse("packagedexcrafting:textures/gui/ender_crafter.png");
 
 	public EnderCrafterScreen(EnderCrafterMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);

@@ -6,16 +6,21 @@ import java.util.stream.IntStream;
 import com.blakebr0.extendedcrafting.crafting.recipe.ShapelessTableRecipe;
 import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import thelm.packagedauto.api.IPackageRecipeInfo;
 import thelm.packagedauto.api.IPackageRecipeType;
 import thelm.packagedauto.api.IRecipeSlotViewWrapper;
@@ -24,13 +29,13 @@ import thelm.packagedauto.api.IRecipeSlotsViewWrapper;
 public class UltimatePackageRecipeType implements IPackageRecipeType {
 
 	public static final UltimatePackageRecipeType INSTANCE = new UltimatePackageRecipeType();
-	public static final ResourceLocation NAME = new ResourceLocation("packagedexcrafting:ultimate");
+	public static final ResourceLocation NAME = ResourceLocation.parse("packagedexcrafting:ultimate");
 	public static final IntSet SLOTS;
 	public static final List<ResourceLocation> CATEGORIES = ImmutableList.of(
-			new ResourceLocation("extendedcrafting:ultimate_crafting"),
-			new ResourceLocation("extendedcrafting:elite_crafting"),
-			new ResourceLocation("extendedcrafting:advanced_crafting"),
-			new ResourceLocation("extendedcrafting:basic_crafting"));
+			ResourceLocation.parse("extendedcrafting:ultimate_crafting"),
+			ResourceLocation.parse("extendedcrafting:elite_crafting"),
+			ResourceLocation.parse("extendedcrafting:advanced_crafting"),
+			ResourceLocation.parse("extendedcrafting:basic_crafting"));
 	public static final Vec3i COLOR = new Vec3i(139, 139, 139);
 	public static final Vec3i COLOR_DISABLED = new Vec3i(64, 64, 64);
 
@@ -57,8 +62,23 @@ public class UltimatePackageRecipeType implements IPackageRecipeType {
 	}
 
 	@Override
-	public IPackageRecipeInfo getNewRecipeInfo() {
-		return new UltimatePackageRecipeInfo();
+	public MapCodec<? extends IPackageRecipeInfo> getRecipeInfoMapCodec() {
+		return UltimatePackageRecipeInfo.MAP_CODEC;
+	}
+
+	@Override
+	public Codec<? extends IPackageRecipeInfo> getRecipeInfoCodec() {
+		return UltimatePackageRecipeInfo.CODEC;
+	}
+
+	@Override
+	public StreamCodec<RegistryFriendlyByteBuf, ? extends IPackageRecipeInfo> getRecipeInfoStreamCodec() {
+		return UltimatePackageRecipeInfo.STREAM_CODEC;
+	}
+
+	@Override
+	public IPackageRecipeInfo generateRecipeInfoFromStacks(List<ItemStack> inputs, List<ItemStack> outputs, Level level) {
+		return new UltimatePackageRecipeInfo(inputs, level);
 	}
 
 	@Override

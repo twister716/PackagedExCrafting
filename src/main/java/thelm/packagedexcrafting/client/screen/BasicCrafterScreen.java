@@ -9,7 +9,7 @@ import thelm.packagedexcrafting.menu.BasicCrafterMenu;
 
 public class BasicCrafterScreen extends BaseScreen<BasicCrafterMenu> {
 
-	public static final ResourceLocation BACKGROUND = new ResourceLocation("packagedexcrafting:textures/gui/basic_crafter.png");
+	public static final ResourceLocation BACKGROUND = ResourceLocation.parse("packagedexcrafting:textures/gui/basic_crafter.png");
 
 	public BasicCrafterScreen(BasicCrafterMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);

@@ -60,19 +60,19 @@ sourceSets {
 	main
 }
 
-def mcVersion = "1.20.1"
+def mcVersion = "1.21.1"
 def modName = "PackagedExCrafting"
 def modId = "packagedexcrafting"
-def specVersion = "3"
+def specVersion = "4"
 def vendor = "thelm"
 
 group = "thelm.packagedexcrafting"
-version = "3.4.0.13"
+version = "4.0.0.0"
 
 archivesBaseName = "${modName}-${mcVersion}"
 
 java {
-	toolchain.languageVersion = JavaLanguageVersion.of(17)
+	toolchain.languageVersion = JavaLanguageVersion.of(21)
 	withSourcesJar()
 }
 
@@ -97,30 +97,30 @@ dependencies {
 	implementation "org.apache.logging.log4j:log4j-core:2.24.1"
 
 	// Minecraft
-	minecraft "com.mojang:minecraft:1.20.1"
+	minecraft "com.mojang:minecraft:1.21.1"
 	mappings loom.layered {
 		officialMojangMappings()
-		parchment "org.parchmentmc.data:parchment-1.20.1:2023.09.03@zip"
+		parchment "org.parchmentmc.data:parchment-1.21:2024.07.28@zip"
 	}
-	forge "net.minecraftforge:forge:1.20.1-47.3.7"
+	neoForge "net.neoforged:neoforge:21.1.72"
 
 	// Dependencies
-	modImplementation "curse.maven:packagedauto-308380:5846684"
-	modImplementation "curse.maven:cucumber-272335:5587888"
-	modImplementation "curse.maven:extended-crafting-268387:5228960"
-	modImplementation("mezz.jei:jei-1.20.1-forge:15.20.0.104") {transitive = false}
-	modImplementation "appeng:appliedenergistics2-forge:15.2.13"
-	modImplementation "vazkii.patchouli:Patchouli:1.20.1-84-FORGE"
+	implementation "curse.maven:packagedauto-308380:5848087"
+	implementation "curse.maven:cucumber-272335:5774468"
+	implementation "curse.maven:extended-crafting-268387:5711764"
+	implementation("mezz.jei:jei-1.21.1-neoforge:19.21.0.246") {transitive = false}
+	implementation "appeng:appliedenergistics2:19.0.23-beta"
+	implementation "curse.maven:ae2-jei-integration-1074338:5748513"
+	implementation "vazkii.patchouli:Patchouli:1.21-87-NEOFORGE"
 
 	// Testing
-	modImplementation "mekanism:Mekanism:1.20.1-10.4.9.61"
-	modImplementation "curse.maven:applied-mekanistics-574300:4842281"
+	implementation "mekanism:Mekanism:1.21.1-10.7.7.64"
+	implementation "curse.maven:applied-mekanistics-574300:5664061"
 
 	//Performance
-	modImplementation "curse.maven:yeetusexperimentus-635427:4680832"
-	implementation "io.github.llamalad7:mixinextras-forge:0.3.6"
-	modImplementation "curse.maven:modernfix-790626:5676014"
-	modImplementation "curse.maven:ferritecore-429235:4810975"
+	implementation "curse.maven:yeetusexperimentus-635427:5444189"
+	implementation "curse.maven:modernfix-790626:5659985"
+	implementation "curse.maven:ferritecore-429235:5434178"
 }
 
 def replacements = [
@@ -161,7 +161,7 @@ publishMods {
 	file = remapJar.archiveFile
 	version = displayName = "${mcVersion}-${project.version}"
 	changelog = file("changelog.md").text
-	type = STABLE
+	type = BETA
 	modLoaders.addAll("forge", "neoforge")
 	additionalFiles.from(remapSourcesJar.archiveFile)
 

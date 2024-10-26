@@ -1,21 +1,16 @@
 package thelm.packagedexcrafting.menu;
 
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraftforge.common.extensions.IForgeMenuType;
-import net.minecraftforge.items.SlotItemHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import thelm.packagedauto.menu.BaseMenu;
-import thelm.packagedauto.menu.factory.PositionalBlockEntityMenuFactory;
 import thelm.packagedauto.slot.RemoveOnlySlot;
 import thelm.packagedexcrafting.block.entity.EliteCrafterBlockEntity;
 import thelm.packagedexcrafting.slot.EliteCrafterRemoveOnlySlot;
 
 public class EliteCrafterMenu extends BaseMenu<EliteCrafterBlockEntity> {
 
-	public static final MenuType<EliteCrafterMenu> TYPE_INSTANCE = IForgeMenuType.create(new PositionalBlockEntityMenuFactory<>(EliteCrafterMenu::new));
-
 	public EliteCrafterMenu(int windowId, Inventory inventory, EliteCrafterBlockEntity blockEntity) {
-		super(TYPE_INSTANCE, windowId, inventory, blockEntity);
+		super(PackagedExCraftingMenus.ELITE_CRAFTER.get(), windowId, inventory, blockEntity);
 		addSlot(new SlotItemHandler(itemHandler, 50, 8, 89));
 		for(int i = 0; i < 7; ++i) {
 			for(int j = 0; j < 7; ++j) {

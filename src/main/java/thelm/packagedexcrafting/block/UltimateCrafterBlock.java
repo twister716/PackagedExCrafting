@@ -1,8 +1,6 @@
 package thelm.packagedexcrafting.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,20 +11,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import thelm.packagedauto.block.BaseBlock;
 import thelm.packagedauto.block.entity.BaseBlockEntity;
+import thelm.packagedexcrafting.block.entity.PackagedExCraftingBlockEntities;
 import thelm.packagedexcrafting.block.entity.UltimateCrafterBlockEntity;
 
 public class UltimateCrafterBlock extends BaseBlock {
 
-	public static final UltimateCrafterBlock INSTANCE = new UltimateCrafterBlock();
-	public static final Item ITEM_INSTANCE = new BlockItem(INSTANCE, new Item.Properties());
-
-	public UltimateCrafterBlock() {
+	protected UltimateCrafterBlock() {
 		super(BlockBehaviour.Properties.of().strength(15F, 25F).mapColor(MapColor.METAL).sound(SoundType.METAL));
 	}
 
 	@Override
 	public UltimateCrafterBlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return UltimateCrafterBlockEntity.TYPE_INSTANCE.create(pos, state);
+		return PackagedExCraftingBlockEntities.ULTIMATE_CRAFTER.get().create(pos, state);
 	}
 
 	@Override

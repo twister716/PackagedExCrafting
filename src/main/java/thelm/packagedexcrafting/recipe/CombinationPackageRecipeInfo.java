@@ -6,18 +6,22 @@ import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.blakebr0.cucumber.crafting.ShapelessCraftingInput;
 import com.blakebr0.extendedcrafting.api.crafting.ICombinationRecipe;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import thelm.packagedauto.api.IPackagePattern;
 import thelm.packagedauto.api.IPackageRecipeType;
@@ -26,48 +30,86 @@ import thelm.packagedauto.util.PackagePattern;
 
 public class CombinationPackageRecipeInfo implements ICombinationPackageRecipeInfo {
 
-	ICombinationRecipe recipe;
-	ItemStack inputCore = ItemStack.EMPTY;
-	List<ItemStack> inputPedestal = new ArrayList<>();
-	List<ItemStack> input = new ArrayList<>();
-	ItemStack output;
-	List<IPackagePattern> patterns = new ArrayList<>();
+	public static final MapCodec<CombinationPackageRecipeInfo> MAP_CODEC = RecordCodecBuilder.mapCodec(instance->instance.group(
+			ResourceLocation.CODEC.fieldOf("id").forGetter(CombinationPackageRecipeInfo::getRecipeId),
+			ItemStack.OPTIONAL_CODEC.orElse(ItemStack.EMPTY).fieldOf("core").forGetter(CombinationPackageRecipeInfo::getCoreInput),
+			ItemStack.OPTIONAL_CODEC.orElse(ItemStack.EMPTY).sizeLimitedListOf(48).fieldOf("pedestal").forGetter(CombinationPackageRecipeInfo::getPedestalInputs)).
+			apply(instance, CombinationPackageRecipeInfo::new));
+	public static final Codec<CombinationPackageRecipeInfo> CODEC = MAP_CODEC.codec();
+	public static final StreamCodec<RegistryFriendlyByteBuf, CombinationPackageRecipeInfo> STREAM_CODEC = StreamCodec.composite(
+			ResourceLocation.STREAM_CODEC, CombinationPackageRecipeInfo::getRecipeId,
+			ItemStack.OPTIONAL_STREAM_CODEC, CombinationPackageRecipeInfo::getCoreInput,
+			ItemStack.OPTIONAL_LIST_STREAM_CODEC, CombinationPackageRecipeInfo::getPedestalInputs,
+			CombinationPackageRecipeInfo::new);
 
-	@Override
-	public void load(CompoundTag nbt) {
-		inputPedestal.clear();
-		input.clear();
-		output = ItemStack.EMPTY;
-		patterns.clear();
-		Recipe<?> recipe = MiscHelper.INSTANCE.getRecipeManager().byKey(new ResourceLocation(nbt.getString("Recipe"))).orElse(null);
-		inputCore = ItemStack.of(nbt.getCompound("InputCore"));
-		MiscHelper.INSTANCE.loadAllItems(nbt.getList("InputPedestal", 10), inputPedestal);
-		List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
-		toCondense.add(inputCore);
-		if(recipe instanceof ICombinationRecipe combinationRecipe) {
-			this.recipe = combinationRecipe;
-			Container matrix = new SimpleContainer(inputPedestal.size()+1);
-			matrix.setItem(0, inputCore);
-			for(int i = 0; i < inputPedestal.size(); ++i) {
-				matrix.setItem(i+1, inputPedestal.get(i));
-			}
-			output = this.recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
-		}
-		input.addAll(MiscHelper.INSTANCE.condenseStacks(toCondense));
+	private final ResourceLocation id;
+	private final ICombinationRecipe recipe;
+	private final ItemStack inputCore;
+	private final List<ItemStack> inputPedestal;
+	private final List<ItemStack> input;
+	private final ItemStack output;
+	private final List<IPackagePattern> patterns = new ArrayList<>();
+
+	public CombinationPackageRecipeInfo(ResourceLocation id, ItemStack inputCore, List<ItemStack> inputPedestal) {
+		this.id = id;
+		this.inputCore = inputCore;
+		this.inputPedestal = inputPedestal;
+		List<ItemStack> matrixList = new ArrayList<>(inputPedestal.size()+1);
+		matrixList.add(inputCore);
+		matrixList.addAll(inputPedestal);
+		CraftingInput matrix = new ShapelessCraftingInput(matrixList);
+		input = MiscHelper.INSTANCE.condenseStacks(matrixList);
 		for(int i = 0; i*9 < input.size(); ++i) {
 			patterns.add(new PackagePattern(this, i));
 		}
+		Recipe<?> recipeSer = MiscHelper.INSTANCE.getRecipeManager().byKey(id).map(RecipeHolder::value).orElse(null);
+		if(recipeSer instanceof ICombinationRecipe combinationRecipe) {
+			recipe = combinationRecipe;
+			output = recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
+		}
+		else {
+			recipe = null;
+			output = ItemStack.EMPTY;
+		}
 	}
 
-	@Override
-	public void save(CompoundTag nbt) {
-		if(recipe != null) {
-			nbt.putString("Recipe", recipe.getId().toString());
+	public CombinationPackageRecipeInfo(List<ItemStack> inputs, Level level) {
+		ItemStack inputCore = ItemStack.EMPTY;
+		inputPedestal = new ArrayList<>();
+		int[] slotArray = CombinationPackageRecipeType.SLOTS.toIntArray();
+		ArrayUtils.shift(slotArray, 0, 25, 1);
+		for(int i = 0; i < 49; ++i) {
+			ItemStack toSet = inputs.get(slotArray[i]);
+			if(!toSet.isEmpty()) {
+				toSet.setCount(1);
+				if(i == 0) {
+					inputCore = toSet.copy();
+				}
+				else {
+					inputPedestal.add(toSet.copy());
+				}
+			}
 		}
-		CompoundTag inputCoreTag = inputCore.save(new CompoundTag());
-		ListTag inputPedestalTag = MiscHelper.INSTANCE.saveAllItems(new ListTag(), inputPedestal);
-		nbt.put("InputCore", inputCoreTag);
-		nbt.put("InputPedestal", inputPedestalTag);
+		this.inputCore = inputCore;
+		List<ItemStack> matrixList = new ArrayList<>(inputPedestal.size()+1);
+		matrixList.add(inputCore);
+		matrixList.addAll(inputPedestal);
+		CraftingInput matrix = new ShapelessCraftingInput(matrixList);
+		RecipeHolder<ICombinationRecipe> recipeHolder = MiscHelper.INSTANCE.getRecipeManager().getRecipeFor(ModRecipeTypes.COMBINATION.get(), matrix, level).orElse(null);
+		if(recipeHolder != null) {
+			id = recipeHolder.id();
+			recipe = recipeHolder.value();
+			output = recipe.assemble(matrix, level.registryAccess()).copy();
+		}
+		else {
+			id = null;
+			recipe = null;
+			output = null;
+		}
+		input = MiscHelper.INSTANCE.condenseStacks(matrixList);
+		for(int i = 0; i*9 < input.size(); ++i) {
+			this.patterns.add(new PackagePattern(this, i));
+		}
 	}
 
 	@Override
@@ -77,7 +119,7 @@ public class CombinationPackageRecipeInfo implements ICombinationPackageRecipeIn
 
 	@Override
 	public boolean isValid() {
-		return recipe != null;
+		return id != null && recipe != null;
 	}
 
 	@Override
@@ -120,47 +162,8 @@ public class CombinationPackageRecipeInfo implements ICombinationPackageRecipeIn
 		return recipe;
 	}
 
-	@Override
-	public void generateFromStacks(List<ItemStack> input, List<ItemStack> output, Level level) {
-		recipe = null;
-		inputCore = ItemStack.EMPTY;
-		inputPedestal.clear();
-		this.input.clear();
-		patterns.clear();
-		int[] slotArray = CombinationPackageRecipeType.SLOTS.toIntArray();
-		ArrayUtils.shift(slotArray, 0, 25, 1);
-		for(int i = 0; i < 49; ++i) {
-			ItemStack toSet = input.get(slotArray[i]);
-			if(!toSet.isEmpty()) {
-				toSet.setCount(1);
-				if(i == 0) {
-					inputCore = toSet.copy();
-				}
-				else {
-					inputPedestal.add(toSet.copy());
-				}
-			}
-			else if(i == 0) {
-				return;
-			}
-		}
-		Container matrix = new SimpleContainer(inputPedestal.size()+1);
-		matrix.setItem(0, inputCore);
-		for(int i = 0; i < inputPedestal.size(); ++i) {
-			matrix.setItem(i+1, inputPedestal.get(i));
-		}
-		ICombinationRecipe recipe = MiscHelper.INSTANCE.getRecipeManager().getRecipeFor(ModRecipeTypes.COMBINATION.get(), matrix, level).orElse(null);
-		if(recipe != null) {
-			this.recipe = recipe;
-			List<ItemStack> toCondense = new ArrayList<>(inputPedestal);
-			toCondense.add(inputCore);
-			this.input.addAll(MiscHelper.INSTANCE.condenseStacks(toCondense));
-			this.output = recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
-			for(int i = 0; i*9 < this.input.size(); ++i) {
-				patterns.add(new PackagePattern(this, i));
-			}
-			return;
-		}
+	public ResourceLocation getRecipeId() {
+		return id;
 	}
 
 	@Override

@@ -9,7 +9,7 @@ import thelm.packagedexcrafting.menu.FluxCrafterMenu;
 
 public class FluxCrafterScreen extends BaseScreen<FluxCrafterMenu> {
 
-	public static final ResourceLocation BACKGROUND = new ResourceLocation("packagedexcrafting:textures/gui/flux_crafter.png");
+	public static final ResourceLocation BACKGROUND = ResourceLocation.parse("packagedexcrafting:textures/gui/flux_crafter.png");
 
 	public FluxCrafterScreen(FluxCrafterMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);

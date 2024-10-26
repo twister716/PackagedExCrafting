@@ -1,7 +1,7 @@
 {
 	"type": "minecraft:crafting_shapeless",
 	"result": {
-		"item": "packagedexcrafting:marked_pedestal",
+		"id": "packagedexcrafting:marked_pedestal",
 		"count": 1
 	},
 	"ingredients": [

@@ -7,6 +7,8 @@ import com.google.common.base.Predicates;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,33 +22,24 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import thelm.packagedauto.api.IPackageCraftingMachine;
 import thelm.packagedauto.api.IPackageRecipeInfo;
+import thelm.packagedauto.block.PackagedAutoBlocks;
 import thelm.packagedauto.block.entity.BaseBlockEntity;
-import thelm.packagedauto.block.entity.UnpackagerBlockEntity;
 import thelm.packagedauto.energy.EnergyStorage;
 import thelm.packagedauto.util.MiscHelper;
-import thelm.packagedexcrafting.block.CombinationCrafterBlock;
-import thelm.packagedexcrafting.integration.appeng.blockentity.AECombinationCrafterBlockEntity;
 import thelm.packagedexcrafting.inventory.CombinationCrafterItemHandler;
 import thelm.packagedexcrafting.menu.CombinationCrafterMenu;
 import thelm.packagedexcrafting.recipe.ICombinationPackageRecipeInfo;
 
 public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IPackageCraftingMachine {
-
-	public static final BlockEntityType<CombinationCrafterBlockEntity> TYPE_INSTANCE = BlockEntityType.Builder.
-			of(MiscHelper.INSTANCE.<BlockEntityType.BlockEntitySupplier<CombinationCrafterBlockEntity>>conditionalSupplier(
-					()->ModList.get().isLoaded("ae2"),
-					()->()->AECombinationCrafterBlockEntity::new, ()->()->CombinationCrafterBlockEntity::new).get(),
-					CombinationCrafterBlock.INSTANCE).build(null);
 
 	public static int energyCapacity = 5000000;
 	public static boolean drawMEEnergy = false;
@@ -60,7 +53,7 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 	public List<BlockPos> pedestals = new ArrayList<>();
 
 	public CombinationCrafterBlockEntity(BlockPos pos, BlockState state) {
-		super(TYPE_INSTANCE, pos, state);
+		super(PackagedExCraftingBlockEntities.COMBINATION_CRAFTER.get(), pos, state);
 		setItemHandler(new CombinationCrafterItemHandler(this));
 		setEnergyStorage(new EnergyStorage(this, energyCapacity));
 	}
@@ -138,7 +131,7 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 			int energy = energyStorage.extractEnergy((int)Math.min(energyUsage, remainingProgress), false);
 			remainingProgress -= energy;
 			if(!level.isClientSide) {
-				spawnParticles(ParticleTypes.ENTITY_EFFECT, worldPosition, 1.15, 2);
+				spawnParticles(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0xFF000000 | level.getRandom().nextInt()), worldPosition, 1.15, 2);
 				if(shouldSpawnItemParticles()) {
 					for(BlockPos pedestalPos : pedestals) {
 						ItemStack stack = ((MarkedPedestalBlockEntity)level.getBlockEntity(pedestalPos)).getItemHandler().getStackInSlot(0);
@@ -194,9 +187,10 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 	protected void ejectItems() {
 		int endIndex = isWorking ? 1 : 0;
 		for(Direction direction : Direction.values()) {
-			BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(direction));
-			if(blockEntity != null && !(blockEntity instanceof UnpackagerBlockEntity) && blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).isPresent()) {
-				IItemHandler itemHandler = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).resolve().get();
+			BlockPos offsetPos = worldPosition.relative(direction);
+			Block block = level.getBlockState(offsetPos).getBlock();
+			IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, offsetPos, direction.getOpposite());
+			if(block != PackagedAutoBlocks.UNPACKAGER.get() && itemHandler != null) {
 				for(int i = 1; i >= endIndex; --i) {
 					ItemStack stack = this.itemHandler.getStackInSlot(i);
 					if(stack.isEmpty()) {
@@ -211,9 +205,10 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 
 	protected void chargeEnergy() {
 		ItemStack energyStack = itemHandler.getStackInSlot(2);
-		if(energyStack.getCapability(ForgeCapabilities.ENERGY, null).isPresent()) {
+		IEnergyStorage itemEnergyStorage = energyStack.getCapability(Capabilities.EnergyStorage.ITEM);
+		if(itemEnergyStorage != null) {
 			int energyRequest = Math.min(energyStorage.getMaxReceive(), energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored());
-			energyStorage.receiveEnergy(energyStack.getCapability(ForgeCapabilities.ENERGY).resolve().get().extractEnergy(energyRequest, false), false);
+			energyStorage.receiveEnergy(itemEnergyStorage.extractEnergy(energyRequest, false), false);
 			if(energyStack.getCount() <= 0) {
 				itemHandler.setStackInSlot(2, ItemStack.EMPTY);
 			}
@@ -261,21 +256,21 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 	}
 
 	@Override
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
-		isWorking = nbt.getBoolean("Working");
-		remainingProgress = nbt.getLong("Progress");
-		energyReq = nbt.getLong("EnergyReq");
-		energyUsage = nbt.getInt("EnergyUsage");
+	public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
+		isWorking = nbt.getBoolean("working");
+		remainingProgress = nbt.getLong("progress");
+		energyReq = nbt.getLong("energy_req");
+		energyUsage = nbt.getInt("energy_usage");
 		currentRecipe = null;
-		if(nbt.contains("Recipe")) {
-			CompoundTag tag = nbt.getCompound("Recipe");
-			IPackageRecipeInfo recipe = MiscHelper.INSTANCE.loadRecipe(tag);
+		if(nbt.contains("recipe")) {
+			CompoundTag tag = nbt.getCompound("recipe");
+			IPackageRecipeInfo recipe = MiscHelper.INSTANCE.loadRecipe(tag, registries);
 			if(recipe instanceof ICombinationPackageRecipeInfo combinationRecipe) {
 				currentRecipe = combinationRecipe;
 			}
 			pedestals.clear();
-			ListTag pedestalsTag = nbt.getList("Pedestals", 11);
+			ListTag pedestalsTag = nbt.getList("pedestals", 11);
 			for(int i = 0; i < pedestalsTag.size(); ++i) {
 				int[] posArray = pedestalsTag.getIntArray(i);
 				BlockPos pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
@@ -285,32 +280,32 @@ public class CombinationCrafterBlockEntity extends BaseBlockEntity implements IP
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag nbt) {
-		super.saveAdditional(nbt);
-		nbt.putBoolean("Working", isWorking);
-		nbt.putLong("Progress", remainingProgress);
-		nbt.putLong("EnergyReq", energyReq);
-		nbt.putInt("EnergyUsage", energyUsage);
+	public void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveAdditional(nbt, registries);
+		nbt.putBoolean("working", isWorking);
+		nbt.putLong("progress", remainingProgress);
+		nbt.putLong("energy_req", energyReq);
+		nbt.putInt("energy_usage", energyUsage);
 		if(currentRecipe != null) {
-			CompoundTag tag = MiscHelper.INSTANCE.saveRecipe(new CompoundTag(), currentRecipe);
-			nbt.put("Recipe", tag);
+			CompoundTag tag = MiscHelper.INSTANCE.saveRecipe(new CompoundTag(), currentRecipe, registries);
+			nbt.put("recipe", tag);
 			ListTag pedestalsTag = new ListTag();
 			pedestals.stream().map(pos->new int[] {pos.getX(), pos.getY(), pos.getZ()}).
 			forEach(arr->pedestalsTag.add(new IntArrayTag(arr)));
-			nbt.put("Pedestals", pedestalsTag);
+			nbt.put("pedestals", pedestalsTag);
 		}
 	}
 
 	@Override
-	public void loadSync(CompoundTag nbt) {
-		super.loadSync(nbt);
-		itemHandler.load(nbt);
+	public void loadSync(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadSync(nbt, registries);
+		itemHandler.load(nbt, registries);
 	}
 
 	@Override
-	public CompoundTag saveSync(CompoundTag nbt) {
-		super.saveSync(nbt);
-		itemHandler.save(nbt);
+	public CompoundTag saveSync(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveSync(nbt, registries);
+		itemHandler.save(nbt, registries);
 		return nbt;
 	}
 

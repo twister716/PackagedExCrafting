@@ -19,11 +19,12 @@ import appeng.api.util.AECableType;
 import appeng.api.util.AEColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import thelm.packagedexcrafting.block.MarkedPedestalBlock;
+import thelm.packagedexcrafting.block.PackagedExCraftingBlocks;
 import thelm.packagedexcrafting.block.entity.MarkedPedestalBlockEntity;
 
 public class AEMarkedPedestalBlockEntity extends MarkedPedestalBlockEntity implements IInWorldGridNodeHost, IGridNodeListener<AEMarkedPedestalBlockEntity>, IActionHost {
@@ -80,8 +81,8 @@ public class AEMarkedPedestalBlockEntity extends MarkedPedestalBlockEntity imple
 	public IManagedGridNode getMainNode() {
 		if(gridNode == null) {
 			gridNode = GridHelper.createManagedNode(this, this);
-			gridNode.setTagName("Node");
-			gridNode.setVisualRepresentation(MarkedPedestalBlock.INSTANCE);
+			gridNode.setTagName("node");
+			gridNode.setVisualRepresentation(PackagedExCraftingBlocks.MARKED_PEDESTAL);
 			gridNode.setGridColor(AEColor.TRANSPARENT);
 			gridNode.setIdlePowerUsage(1);
 			gridNode.setInWorldNode(true);
@@ -121,16 +122,16 @@ public class AEMarkedPedestalBlockEntity extends MarkedPedestalBlockEntity imple
 	}
 
 	@Override
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
-		if(nbt.contains("Node")) {
+	public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
+		if(nbt.contains("node")) {
 			getMainNode().loadFromNBT(nbt);
 		}
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag nbt) {
-		super.saveAdditional(nbt);
+	public void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveAdditional(nbt, registries);
 		if(gridNode != null) {
 			gridNode.saveToNBT(nbt);
 		}

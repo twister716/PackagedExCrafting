@@ -1,6 +1,7 @@
 package thelm.packagedexcrafting.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -8,25 +9,14 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.fml.ModList;
 import thelm.packagedauto.block.entity.BaseBlockEntity;
-import thelm.packagedauto.util.MiscHelper;
-import thelm.packagedexcrafting.block.MarkedPedestalBlock;
-import thelm.packagedexcrafting.integration.appeng.blockentity.AEMarkedPedestalBlockEntity;
 import thelm.packagedexcrafting.inventory.MarkedPedestalItemHandler;
 
 public class MarkedPedestalBlockEntity extends BaseBlockEntity {
 
-	public static final BlockEntityType<MarkedPedestalBlockEntity> TYPE_INSTANCE = BlockEntityType.Builder.
-			of(MiscHelper.INSTANCE.<BlockEntityType.BlockEntitySupplier<MarkedPedestalBlockEntity>>conditionalSupplier(
-					()->ModList.get().isLoaded("ae2"),
-					()->()->AEMarkedPedestalBlockEntity::new, ()->()->MarkedPedestalBlockEntity::new).get(),
-					MarkedPedestalBlock.INSTANCE).build(null);
-
 	public MarkedPedestalBlockEntity(BlockPos pos, BlockState state) {
-		super(TYPE_INSTANCE, pos, state);
+		super(PackagedExCraftingBlockEntities.MARKED_PEDESTAL.get(), pos, state);
 		setItemHandler(new MarkedPedestalItemHandler(this));
 	}
 
@@ -54,15 +44,15 @@ public class MarkedPedestalBlockEntity extends BaseBlockEntity {
 	}
 
 	@Override
-	public void loadSync(CompoundTag nbt) {
-		super.loadSync(nbt);
-		itemHandler.load(nbt);
+	public void loadSync(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadSync(nbt, registries);
+		itemHandler.load(nbt, registries);
 	}
 
 	@Override
-	public CompoundTag saveSync(CompoundTag nbt) {
-		super.saveSync(nbt);
-		itemHandler.save(nbt);
+	public CompoundTag saveSync(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveSync(nbt, registries);
+		itemHandler.save(nbt, registries);
 		return nbt;
 	}
 

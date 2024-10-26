@@ -6,16 +6,21 @@ import java.util.List;
 
 import com.blakebr0.extendedcrafting.api.crafting.IFluxCrafterRecipe;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import thelm.packagedauto.api.IPackagePattern;
 import thelm.packagedauto.api.IPackageRecipeType;
@@ -24,44 +29,69 @@ import thelm.packagedauto.util.PackagePattern;
 
 public class FluxPackageRecipeInfo implements IFluxPackageRecipeInfo {
 
-	IFluxCrafterRecipe recipe;
-	List<ItemStack> input = new ArrayList<>();
-	Container matrix = new SimpleContainer(9);
-	ItemStack output;
-	List<IPackagePattern> patterns = new ArrayList<>();
+	public static final MapCodec<FluxPackageRecipeInfo> MAP_CODEC = RecordCodecBuilder.mapCodec(instance->instance.group(
+			ResourceLocation.CODEC.fieldOf("id").forGetter(FluxPackageRecipeInfo::getRecipeId),
+			Codec.INT.fieldOf("width").forGetter(FluxPackageRecipeInfo::getMatrixWidth),
+			Codec.INT.fieldOf("height").forGetter(FluxPackageRecipeInfo::getMatrixHeight),
+			ItemStack.OPTIONAL_CODEC.orElse(ItemStack.EMPTY).sizeLimitedListOf(9).fieldOf("input").forGetter(FluxPackageRecipeInfo::getMatrixAsList)).
+			apply(instance, FluxPackageRecipeInfo::new));
+	public static final Codec<FluxPackageRecipeInfo> CODEC = MAP_CODEC.codec();
+	public static final StreamCodec<RegistryFriendlyByteBuf, FluxPackageRecipeInfo> STREAM_CODEC = StreamCodec.composite(
+			ResourceLocation.STREAM_CODEC, FluxPackageRecipeInfo::getRecipeId,
+			ByteBufCodecs.INT, FluxPackageRecipeInfo::getMatrixWidth,
+			ByteBufCodecs.INT, FluxPackageRecipeInfo::getMatrixHeight,
+			ItemStack.OPTIONAL_LIST_STREAM_CODEC, FluxPackageRecipeInfo::getMatrixAsList,
+			FluxPackageRecipeInfo::new);
 
-	@Override
-	public void load(CompoundTag nbt) {
-		input.clear();
-		output = ItemStack.EMPTY;
-		patterns.clear();
-		Recipe<?> recipe = MiscHelper.INSTANCE.getRecipeManager().byKey(new ResourceLocation(nbt.getString("Recipe"))).orElse(null);
-		List<ItemStack> matrixList = new ArrayList<>();
-		MiscHelper.INSTANCE.loadAllItems(nbt.getList("Matrix", 10), matrixList);
-		for(int i = 0; i < 9 && i < matrixList.size(); ++i) {
-			matrix.setItem(i, matrixList.get(i));
-		}
-		if(recipe instanceof IFluxCrafterRecipe fluxRecipe) {
-			this.recipe = fluxRecipe;
-			output = this.recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
-		}
-		input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
+	private final ResourceLocation id;
+	private final IFluxCrafterRecipe recipe;
+	private final List<ItemStack> input;
+	private final CraftingInput matrix;
+	private final ItemStack output;
+	private final List<IPackagePattern> patterns = new ArrayList<>();
+
+	public FluxPackageRecipeInfo(ResourceLocation id, int width, int height, List<ItemStack> matrixSer) {
+		this.id = id;
+		matrix = CraftingInput.of(width, height, matrixSer);
+		input = MiscHelper.INSTANCE.condenseStacks(matrix.items());
 		for(int i = 0; i*9 < input.size(); ++i) {
 			patterns.add(new PackagePattern(this, i));
 		}
+		Recipe<?> recipeSer = MiscHelper.INSTANCE.getRecipeManager().byKey(id).map(RecipeHolder::value).orElse(null);
+		if(recipeSer instanceof IFluxCrafterRecipe fluxRecipe) {
+			recipe = fluxRecipe;
+			output = recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
+		}
+		else {
+			recipe = null;
+			output = ItemStack.EMPTY;
+		}
 	}
 
-	@Override
-	public void save(CompoundTag nbt) {
-		if(recipe != null) {
-			nbt.putString("Recipe", recipe.getId().toString());
-		}
-		List<ItemStack> matrixList = new ArrayList<>();
+	public FluxPackageRecipeInfo(List<ItemStack> inputs, Level level) {
+		NonNullList<ItemStack> matrixList = NonNullList.withSize(9, ItemStack.EMPTY);
+		int[] slotArray = FluxPackageRecipeType.SLOTS.toIntArray();
 		for(int i = 0; i < 9; ++i) {
-			matrixList.add(matrix.getItem(i));
+			ItemStack toSet = inputs.get(slotArray[i]);
+			toSet.setCount(1);
+			matrixList.set(i, toSet.copy());
 		}
-		ListTag matrixTag = MiscHelper.INSTANCE.saveAllItems(new ListTag(), matrixList);
-		nbt.put("Matrix", matrixTag);
+		matrix = CraftingInput.of(3, 3, matrixList);
+		RecipeHolder<IFluxCrafterRecipe> recipeHolder = MiscHelper.INSTANCE.getRecipeManager().getRecipeFor(ModRecipeTypes.FLUX_CRAFTER.get(), matrix, level).orElse(null);
+		if(recipeHolder != null) {
+			id = recipeHolder.id();
+			recipe = recipeHolder.value();
+			output = recipe.assemble(matrix, level.registryAccess()).copy();
+		}
+		else {
+			id = null;
+			recipe = null;
+			output = null;
+		}
+		input = MiscHelper.INSTANCE.condenseStacks(matrix.items());
+		for(int i = 0; i*9 < input.size(); ++i) {
+			this.patterns.add(new PackagePattern(this, i));
+		}
 	}
 
 	@Override
@@ -71,7 +101,7 @@ public class FluxPackageRecipeInfo implements IFluxPackageRecipeInfo {
 
 	@Override
 	public boolean isValid() {
-		return recipe != null;
+		return id != null && recipe != null;
 	}
 
 	@Override
@@ -94,9 +124,25 @@ public class FluxPackageRecipeInfo implements IFluxPackageRecipeInfo {
 		return recipe;
 	}
 
+	public ResourceLocation getRecipeId() {
+		return id;
+	}
+
 	@Override
-	public Container getMatrix() {
+	public CraftingInput getMatrix() {
 		return matrix;
+	}
+
+	public List<ItemStack> getMatrixAsList() {
+		return Collections.unmodifiableList(matrix.items());
+	}
+
+	public int getMatrixWidth() {
+		return matrix.width();
+	}
+
+	public int getMatrixHeight() {
+		return matrix.height();
 	}
 
 	@Override
@@ -112,30 +158,6 @@ public class FluxPackageRecipeInfo implements IFluxPackageRecipeInfo {
 	@Override
 	public List<ItemStack> getRemainingItems() {
 		return recipe.getRemainingItems(matrix);
-	}
-
-	@Override
-	public void generateFromStacks(List<ItemStack> input, List<ItemStack> output, Level level) {
-		recipe = null;
-		this.input.clear();
-		patterns.clear();
-		int[] slotArray = BasicPackageRecipeType.SLOTS.toIntArray();
-		for(int i = 0; i < 9; ++i) {
-			ItemStack toSet = input.get(slotArray[i]);
-			toSet.setCount(1);
-			matrix.setItem(i, toSet.copy());
-		}
-		IFluxCrafterRecipe recipe = MiscHelper.INSTANCE.getRecipeManager().getRecipeFor(ModRecipeTypes.FLUX_CRAFTER.get(), matrix, level).orElse(null);
-		if(recipe != null) {
-			this.recipe = recipe;
-			this.input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
-			this.output = recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
-			for(int i = 0; i*9 < this.input.size(); ++i) {
-				patterns.add(new PackagePattern(this, i));
-			}
-			return;
-		}
-		matrix.clearContent();
 	}
 
 	@Override

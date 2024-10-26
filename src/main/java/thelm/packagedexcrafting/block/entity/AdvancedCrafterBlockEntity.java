@@ -2,40 +2,35 @@ package thelm.packagedexcrafting.block.entity;
 
 import java.util.List;
 
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import thelm.packagedauto.api.IPackageCraftingMachine;
 import thelm.packagedauto.api.IPackageRecipeInfo;
+import thelm.packagedauto.block.PackagedAutoBlocks;
 import thelm.packagedauto.block.entity.BaseBlockEntity;
-import thelm.packagedauto.block.entity.UnpackagerBlockEntity;
 import thelm.packagedauto.energy.EnergyStorage;
 import thelm.packagedauto.util.MiscHelper;
-import thelm.packagedexcrafting.block.AdvancedCrafterBlock;
-import thelm.packagedexcrafting.integration.appeng.blockentity.AEAdvancedCrafterBlockEntity;
 import thelm.packagedexcrafting.inventory.AdvancedCrafterItemHandler;
 import thelm.packagedexcrafting.menu.AdvancedCrafterMenu;
 import thelm.packagedexcrafting.recipe.ITablePackageRecipeInfo;
 
 public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPackageCraftingMachine {
-
-	public static final BlockEntityType<AdvancedCrafterBlockEntity> TYPE_INSTANCE = BlockEntityType.Builder.
-			of(MiscHelper.INSTANCE.<BlockEntityType.BlockEntitySupplier<AdvancedCrafterBlockEntity>>conditionalSupplier(
-					()->ModList.get().isLoaded("ae2"),
-					()->()->AEAdvancedCrafterBlockEntity::new, ()->()->AdvancedCrafterBlockEntity::new).get(),
-					AdvancedCrafterBlock.INSTANCE).build(null);
 
 	public static int energyCapacity = 5000;
 	public static int energyReq = 1000;
@@ -47,7 +42,7 @@ public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPack
 	public ITablePackageRecipeInfo currentRecipe;
 
 	public AdvancedCrafterBlockEntity(BlockPos pos, BlockState state) {
-		super(TYPE_INSTANCE, pos, state);
+		super(PackagedExCraftingBlockEntities.ADVANCED_CRAFTER.get(), pos, state);
 		setItemHandler(new AdvancedCrafterItemHandler(this));
 		setEnergyStorage(new EnergyStorage(this, energyCapacity));
 	}
@@ -80,12 +75,15 @@ public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPack
 			if(recipe.getTier() == 2) {
 				ItemStack slotStack = itemHandler.getStackInSlot(25);
 				ItemStack outputStack = recipe.getOutput();
-				if(slotStack.isEmpty() || ItemStack.isSameItemSameTags(slotStack, outputStack) && slotStack.getCount()+outputStack.getCount() <= outputStack.getMaxStackSize()) {
+				if(slotStack.isEmpty() || ItemStack.isSameItemSameComponents(slotStack, outputStack) && slotStack.getCount()+outputStack.getCount() <= outputStack.getMaxStackSize()) {
 					currentRecipe = recipe;
 					isWorking = true;
 					remainingProgress = energyReq;
-					for(int i = 0; i < 25; ++i) {
-						itemHandler.setStackInSlot(i, recipe.getMatrix().getItem(i).copy());
+					TableCraftingInput matrix = recipe.getMatrix();
+					for(int i = 0; i < matrix.height(); ++i) {
+						for(int j = 0; j < matrix.width(); ++j) {
+							itemHandler.setStackInSlot(i*5+j, matrix.getItem(i*matrix.width()+j).copy());
+						}
 					}
 					setChanged();
 					return true;
@@ -117,8 +115,11 @@ public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPack
 			itemHandler.getStackInSlot(25).grow(currentRecipe.getOutput().getCount());
 		}
 		List<ItemStack> remainingItems = currentRecipe.getRemainingItems();
-		for(int i = 0; i < 25; ++i) {
-			itemHandler.setStackInSlot(i, remainingItems.get(i));
+		TableCraftingInput matrix = currentRecipe.getMatrix();
+		for(int i = 0; i < matrix.height(); ++i) {
+			for(int j = 0; j < matrix.width(); ++j) {
+				itemHandler.setStackInSlot(i*5+j, remainingItems.get(i*matrix.width()+j));
+			}
 		}
 		endProcess();
 	}
@@ -133,9 +134,10 @@ public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPack
 	protected void ejectItems() {
 		int endIndex = isWorking ? 25 : 0;
 		for(Direction direction : Direction.values()) {
-			BlockEntity blockEntity = level.getBlockEntity(worldPosition.relative(direction));
-			if(blockEntity != null && !(blockEntity instanceof UnpackagerBlockEntity) && blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).isPresent()) {
-				IItemHandler itemHandler = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).resolve().get();
+			BlockPos offsetPos = worldPosition.relative(direction);
+			Block block = level.getBlockState(offsetPos).getBlock();
+			IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, offsetPos, direction.getOpposite());
+			if(block != PackagedAutoBlocks.UNPACKAGER.get() && itemHandler != null) {
 				for(int i = 25; i >= endIndex; --i) {
 					ItemStack stack = this.itemHandler.getStackInSlot(i);
 					if(stack.isEmpty()) {
@@ -150,9 +152,10 @@ public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPack
 
 	protected void chargeEnergy() {
 		ItemStack energyStack = itemHandler.getStackInSlot(26);
-		if(energyStack.getCapability(ForgeCapabilities.ENERGY, null).isPresent()) {
+		IEnergyStorage itemEnergyStorage = energyStack.getCapability(Capabilities.EnergyStorage.ITEM);
+		if(itemEnergyStorage != null) {
 			int energyRequest = Math.min(energyStorage.getMaxReceive(), energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored());
-			energyStorage.receiveEnergy(energyStack.getCapability(ForgeCapabilities.ENERGY).resolve().get().extractEnergy(energyRequest, false), false);
+			energyStorage.receiveEnergy(itemEnergyStorage.extractEnergy(energyRequest, false), false);
 			if(energyStack.getCount() <= 0) {
 				itemHandler.setStackInSlot(26, ItemStack.EMPTY);
 			}
@@ -171,14 +174,14 @@ public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPack
 	}
 
 	@Override
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
-		isWorking = nbt.getBoolean("Working");
-		remainingProgress = nbt.getInt("Progress");
+	public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
+		isWorking = nbt.getBoolean("working");
+		remainingProgress = nbt.getInt("progress");
 		currentRecipe = null;
-		if(nbt.contains("Recipe")) {
-			CompoundTag tag = nbt.getCompound("Recipe");
-			IPackageRecipeInfo recipe = MiscHelper.INSTANCE.loadRecipe(tag);
+		if(nbt.contains("recipe")) {
+			CompoundTag tag = nbt.getCompound("recipe");
+			IPackageRecipeInfo recipe = MiscHelper.INSTANCE.loadRecipe(tag, registries);
 			if(recipe instanceof ITablePackageRecipeInfo tableRecipe && tableRecipe.getTier() == 2) {
 				currentRecipe = tableRecipe;
 			}
@@ -186,13 +189,13 @@ public class AdvancedCrafterBlockEntity extends BaseBlockEntity implements IPack
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag nbt) {
-		super.saveAdditional(nbt);
-		nbt.putBoolean("Working", isWorking);
-		nbt.putInt("Progress", remainingProgress);
+	public void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveAdditional(nbt, registries);
+		nbt.putBoolean("working", isWorking);
+		nbt.putInt("progress", remainingProgress);
 		if(currentRecipe != null) {
-			CompoundTag tag = MiscHelper.INSTANCE.saveRecipe(new CompoundTag(), currentRecipe);
-			nbt.put("Recipe", tag);
+			CompoundTag tag = MiscHelper.INSTANCE.saveRecipe(new CompoundTag(), currentRecipe, registries);
+			nbt.put("recipe", tag);
 		}
 	}
 

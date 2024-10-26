@@ -9,7 +9,7 @@ import thelm.packagedexcrafting.menu.EliteCrafterMenu;
 
 public class EliteCrafterScreen extends BaseScreen<EliteCrafterMenu> {
 
-	public static final ResourceLocation BACKGROUND = new ResourceLocation("packagedexcrafting:textures/gui/elite_crafter.png");
+	public static final ResourceLocation BACKGROUND = ResourceLocation.parse("packagedexcrafting:textures/gui/elite_crafter.png");
 
 	public EliteCrafterScreen(EliteCrafterMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);

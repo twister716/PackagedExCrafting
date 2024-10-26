@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.blakebr0.extendedcrafting.api.crafting.IEnderCrafterRecipe;
 
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import thelm.packagedauto.api.IPackageRecipeInfo;
 
 public interface IEnderPackageRecipeInfo extends IPackageRecipeInfo {
@@ -14,7 +14,7 @@ public interface IEnderPackageRecipeInfo extends IPackageRecipeInfo {
 
 	IEnderCrafterRecipe getRecipe();
 
-	Container getMatrix();
+	CraftingInput getMatrix();
 
 	int getTimeRequired();
 

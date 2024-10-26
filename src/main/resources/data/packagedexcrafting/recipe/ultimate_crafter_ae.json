@@ -1,13 +1,13 @@
 {
-	"conditions": [
+	"neoforge:conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "neoforge:mod_loaded",
 			"modid": "ae2"
 		}
 	],
 	"type": "minecraft:crafting_shaped",
 	"result": {
-		"item": "packagedexcrafting:ultimate_crafter",
+		"id": "packagedexcrafting:ultimate_crafter",
 		"count": 1
 	},
 	"pattern": [

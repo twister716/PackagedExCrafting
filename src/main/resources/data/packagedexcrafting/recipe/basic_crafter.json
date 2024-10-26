@@ -1,32 +1,32 @@
 {
-	"conditions": [
+	"neoforge:conditions": [
 		{
-			"type": "forge:not",
+			"type": "neoforge:not",
 			"value": {
-				"type": "forge:mod_loaded",
+				"type": "neoforge:mod_loaded",
 				"modid": "ae2"
 			}
 		}
 	],
 	"type": "minecraft:crafting_shaped",
 	"result": {
-		"item": "packagedexcrafting:ender_crafter",
+		"id": "packagedexcrafting:basic_crafter",
 		"count": 1
 	},
 	"pattern": [
-		"ECE",
+		"ICI",
 		"YTY",
-		"ERE"
+		"IRI"
 	],
 	"key": {
 		"C": {
 			"item": "packagedauto:package_component"
 		},
 		"T": {
-			"item": "extendedcrafting:auto_ender_crafter"
+			"item": "extendedcrafting:basic_auto_table"
 		},
-		"E": {
-			"item": "extendedcrafting:enhanced_ender_ingot"
+		"I": {
+			"item": "extendedcrafting:black_iron_ingot"
 		},
 		"Y": {
 			"item": "extendedcrafting:crystaltine_component"

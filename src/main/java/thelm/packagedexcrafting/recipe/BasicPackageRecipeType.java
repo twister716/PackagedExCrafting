@@ -1,19 +1,23 @@
 package thelm.packagedexcrafting.recipe;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.blakebr0.extendedcrafting.init.ModBlocks;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntRBTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import thelm.packagedauto.api.IPackageRecipeInfo;
 import thelm.packagedauto.api.IPackageRecipeType;
 import thelm.packagedauto.api.IRecipeSlotViewWrapper;
@@ -22,9 +26,9 @@ import thelm.packagedauto.api.IRecipeSlotsViewWrapper;
 public class BasicPackageRecipeType implements IPackageRecipeType {
 
 	public static final BasicPackageRecipeType INSTANCE = new BasicPackageRecipeType();
-	public static final ResourceLocation NAME = new ResourceLocation("packagedexcrafting:basic");
+	public static final ResourceLocation NAME = ResourceLocation.parse("packagedexcrafting:basic");
 	public static final IntSet SLOTS;
-	public static final List<ResourceLocation> CATEGORIES = Collections.singletonList(new ResourceLocation("extendedcrafting:basic_crafting"));
+	public static final List<ResourceLocation> CATEGORIES = List.of(ResourceLocation.parse("extendedcrafting:basic_crafting"));
 	public static final Vec3i COLOR = new Vec3i(139, 139, 139);
 	public static final Vec3i COLOR_DISABLED = new Vec3i(64, 64, 64);
 
@@ -55,8 +59,23 @@ public class BasicPackageRecipeType implements IPackageRecipeType {
 	}
 
 	@Override
-	public IPackageRecipeInfo getNewRecipeInfo() {
-		return new BasicPackageRecipeInfo();
+	public MapCodec<? extends IPackageRecipeInfo> getRecipeInfoMapCodec() {
+		return BasicPackageRecipeInfo.MAP_CODEC;
+	}
+
+	@Override
+	public Codec<? extends IPackageRecipeInfo> getRecipeInfoCodec() {
+		return BasicPackageRecipeInfo.CODEC;
+	}
+
+	@Override
+	public StreamCodec<RegistryFriendlyByteBuf, ? extends IPackageRecipeInfo> getRecipeInfoStreamCodec() {
+		return BasicPackageRecipeInfo.STREAM_CODEC;
+	}
+
+	@Override
+	public IPackageRecipeInfo generateRecipeInfoFromStacks(List<ItemStack> inputs, List<ItemStack> outputs, Level level) {
+		return new BasicPackageRecipeInfo(inputs, level);
 	}
 
 	@Override

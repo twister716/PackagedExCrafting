@@ -1,8 +1,8 @@
 package thelm.packagedexcrafting.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import thelm.packagedexcrafting.block.entity.AdvancedCrafterBlockEntity;
 import thelm.packagedexcrafting.block.entity.BasicCrafterBlockEntity;
 import thelm.packagedexcrafting.block.entity.CombinationCrafterBlockEntity;
@@ -15,49 +15,49 @@ public class PackagedExCraftingConfig {
 
 	private PackagedExCraftingConfig() {}
 
-	private static ForgeConfigSpec serverSpec;
+	private static ModConfigSpec serverSpec;
 
-	public static ForgeConfigSpec.IntValue basicCrafterEnergyCapacity;
-	public static ForgeConfigSpec.IntValue basicCrafterEnergyReq;
-	public static ForgeConfigSpec.IntValue basicCrafterEnergyUsage;
-	public static ForgeConfigSpec.BooleanValue basicCrafterDrawMEEnergy;
+	public static ModConfigSpec.IntValue basicCrafterEnergyCapacity;
+	public static ModConfigSpec.IntValue basicCrafterEnergyReq;
+	public static ModConfigSpec.IntValue basicCrafterEnergyUsage;
+	public static ModConfigSpec.BooleanValue basicCrafterDrawMEEnergy;
 
-	public static ForgeConfigSpec.IntValue advancedCrafterEnergyCapacity;
-	public static ForgeConfigSpec.IntValue advancedCrafterEnergyReq;
-	public static ForgeConfigSpec.IntValue advancedCrafterEnergyUsage;
-	public static ForgeConfigSpec.BooleanValue advancedCrafterDrawMEEnergy;
+	public static ModConfigSpec.IntValue advancedCrafterEnergyCapacity;
+	public static ModConfigSpec.IntValue advancedCrafterEnergyReq;
+	public static ModConfigSpec.IntValue advancedCrafterEnergyUsage;
+	public static ModConfigSpec.BooleanValue advancedCrafterDrawMEEnergy;
 
-	public static ForgeConfigSpec.IntValue eliteCrafterEnergyCapacity;
-	public static ForgeConfigSpec.IntValue eliteCrafterEnergyReq;
-	public static ForgeConfigSpec.IntValue eliteCrafterEnergyUsage;
-	public static ForgeConfigSpec.BooleanValue eliteCrafterDrawMEEnergy;
+	public static ModConfigSpec.IntValue eliteCrafterEnergyCapacity;
+	public static ModConfigSpec.IntValue eliteCrafterEnergyReq;
+	public static ModConfigSpec.IntValue eliteCrafterEnergyUsage;
+	public static ModConfigSpec.BooleanValue eliteCrafterDrawMEEnergy;
 
-	public static ForgeConfigSpec.IntValue ultimateCrafterEnergyCapacity;
-	public static ForgeConfigSpec.IntValue ultimateCrafterEnergyReq;
-	public static ForgeConfigSpec.IntValue ultimateCrafterEnergyUsage;
-	public static ForgeConfigSpec.BooleanValue ultimateCrafterDrawMEEnergy;
+	public static ModConfigSpec.IntValue ultimateCrafterEnergyCapacity;
+	public static ModConfigSpec.IntValue ultimateCrafterEnergyReq;
+	public static ModConfigSpec.IntValue ultimateCrafterEnergyUsage;
+	public static ModConfigSpec.BooleanValue ultimateCrafterDrawMEEnergy;
 
-	public static ForgeConfigSpec.IntValue enderCrafterEnergyCapacity;
-	public static ForgeConfigSpec.DoubleValue enderCrafterAlternatorEff;
-	public static ForgeConfigSpec.IntValue enderCrafterEnergyReq;
-	public static ForgeConfigSpec.IntValue enderCrafterEnergyUsage;
-	public static ForgeConfigSpec.BooleanValue enderCrafterDrawMEEnergy;
+	public static ModConfigSpec.IntValue enderCrafterEnergyCapacity;
+	public static ModConfigSpec.DoubleValue enderCrafterAlternatorEff;
+	public static ModConfigSpec.IntValue enderCrafterEnergyReq;
+	public static ModConfigSpec.IntValue enderCrafterEnergyUsage;
+	public static ModConfigSpec.BooleanValue enderCrafterDrawMEEnergy;
 
-	public static ForgeConfigSpec.IntValue fluxCrafterEnergyCapacity;
-	public static ForgeConfigSpec.IntValue fluxCrafterEnergyReq;
-	public static ForgeConfigSpec.IntValue fluxCrafterEnergyUsage;
-	public static ForgeConfigSpec.BooleanValue fluxCrafterDrawMEEnergy;
+	public static ModConfigSpec.IntValue fluxCrafterEnergyCapacity;
+	public static ModConfigSpec.IntValue fluxCrafterEnergyReq;
+	public static ModConfigSpec.IntValue fluxCrafterEnergyUsage;
+	public static ModConfigSpec.BooleanValue fluxCrafterDrawMEEnergy;
 
-	public static ForgeConfigSpec.IntValue combinationCrafterEnergyCapacity;
-	public static ForgeConfigSpec.BooleanValue combinationCrafterDrawMEEnergy;
+	public static ModConfigSpec.IntValue combinationCrafterEnergyCapacity;
+	public static ModConfigSpec.BooleanValue combinationCrafterDrawMEEnergy;
 
 	public static void registerConfig() {
 		buildConfig();
-		ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, serverSpec);
+		ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.SERVER, serverSpec);
 	}
 
 	private static void buildConfig() {
-		ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+		ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
 		builder.push("basic_crafter");
 		builder.comment("How much FE the Basic Package Crafter should hold.");

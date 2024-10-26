@@ -1,13 +1,13 @@
 {
-	"conditions": [
+	"neoforge:conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "neoforge:mod_loaded",
 			"modid": "ae2"
 		}
 	],
 	"type": "minecraft:crafting_shaped",
 	"result": {
-		"item": "packagedexcrafting:elite_crafter",
+		"id": "packagedexcrafting:basic_crafter",
 		"count": 1
 	},
 	"pattern": [
@@ -20,7 +20,7 @@
 			"item": "packagedauto:me_package_component"
 		},
 		"T": {
-			"item": "extendedcrafting:elite_auto_table"
+			"item": "extendedcrafting:basic_auto_table"
 		},
 		"I": {
 			"item": "extendedcrafting:black_iron_ingot"

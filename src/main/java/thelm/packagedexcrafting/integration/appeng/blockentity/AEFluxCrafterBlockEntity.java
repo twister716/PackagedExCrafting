@@ -2,7 +2,7 @@ package thelm.packagedexcrafting.integration.appeng.blockentity;
 
 import appeng.api.config.Actionable;
 import appeng.api.config.PowerMultiplier;
-import appeng.api.config.PowerUnits;
+import appeng.api.config.PowerUnit;
 import appeng.api.features.IPlayerRegistry;
 import appeng.api.networking.GridHelper;
 import appeng.api.networking.IGrid;
@@ -21,11 +21,12 @@ import appeng.api.util.AECableType;
 import appeng.api.util.AEColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import thelm.packagedexcrafting.block.FluxCrafterBlock;
+import thelm.packagedexcrafting.block.PackagedExCraftingBlocks;
 import thelm.packagedexcrafting.block.entity.FluxCrafterBlockEntity;
 
 public class AEFluxCrafterBlockEntity extends FluxCrafterBlockEntity implements IInWorldGridNodeHost, IGridNodeListener<AEFluxCrafterBlockEntity>, IActionHost {
@@ -85,8 +86,8 @@ public class AEFluxCrafterBlockEntity extends FluxCrafterBlockEntity implements 
 	public IManagedGridNode getMainNode() {
 		if(gridNode == null) {
 			gridNode = GridHelper.createManagedNode(this, this);
-			gridNode.setTagName("Node");
-			gridNode.setVisualRepresentation(FluxCrafterBlock.INSTANCE);
+			gridNode.setTagName("node");
+			gridNode.setVisualRepresentation(PackagedExCraftingBlocks.FLUX_CRAFTER);
 			gridNode.setGridColor(AEColor.TRANSPARENT);
 			gridNode.setIdlePowerUsage(1);
 			gridNode.setInWorldNode(true);
@@ -131,12 +132,11 @@ public class AEFluxCrafterBlockEntity extends FluxCrafterBlockEntity implements 
 		}
 	}
 
-	@SuppressWarnings("removal")
 	protected void chargeMEEnergy() {
 		if(getMainNode().isActive()) {
 			IGrid grid = getMainNode().getGrid();
 			IEnergyService energyService = grid.getEnergyService();
-			double conversion = PowerUnits.RF.convertTo(PowerUnits.AE, 1);
+			double conversion = PowerUnit.FE.convertTo(PowerUnit.AE, 1);
 			int request = Math.min(energyStorage.getMaxReceive(), energyStorage.getMaxEnergyStored()-energyStorage.getEnergyStored());
 			double available = energyService.extractAEPower((request+0.5)*conversion, Actionable.SIMULATE, PowerMultiplier.CONFIG);
 			int extract = (int)(available/conversion);
@@ -146,16 +146,16 @@ public class AEFluxCrafterBlockEntity extends FluxCrafterBlockEntity implements 
 	}
 
 	@Override
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
-		if(nbt.contains("Node")) {
+	public void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
+		if(nbt.contains("node")) {
 			getMainNode().loadFromNBT(nbt);
 		}
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag nbt) {
-		super.saveAdditional(nbt);
+	public void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveAdditional(nbt, registries);
 		if(gridNode != null) {
 			gridNode.saveToNBT(nbt);
 		}

@@ -2,9 +2,9 @@ package thelm.packagedexcrafting.recipe;
 
 import java.util.List;
 
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import thelm.packagedauto.api.IPackageRecipeInfo;
 
@@ -16,7 +16,7 @@ public interface ITablePackageRecipeInfo extends IPackageRecipeInfo {
 
 	ITableRecipe getRecipe();
 
-	Container getMatrix();
+	TableCraftingInput getMatrix();
 
 	List<ItemStack> getRemainingItems();
 

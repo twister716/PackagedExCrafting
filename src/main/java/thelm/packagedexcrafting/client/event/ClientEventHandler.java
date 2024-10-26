@@ -1,12 +1,11 @@
 package thelm.packagedexcrafting.client.event;
 
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import thelm.packagedexcrafting.block.entity.CombinationCrafterBlockEntity;
-import thelm.packagedexcrafting.block.entity.MarkedPedestalBlockEntity;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import thelm.packagedexcrafting.block.entity.PackagedExCraftingBlockEntities;
 import thelm.packagedexcrafting.client.renderer.CombinationCrafterRenderer;
 import thelm.packagedexcrafting.client.renderer.MarkedPedestalRenderer;
 import thelm.packagedexcrafting.client.screen.AdvancedCrafterScreen;
@@ -16,13 +15,7 @@ import thelm.packagedexcrafting.client.screen.EliteCrafterScreen;
 import thelm.packagedexcrafting.client.screen.EnderCrafterScreen;
 import thelm.packagedexcrafting.client.screen.FluxCrafterScreen;
 import thelm.packagedexcrafting.client.screen.UltimateCrafterScreen;
-import thelm.packagedexcrafting.menu.AdvancedCrafterMenu;
-import thelm.packagedexcrafting.menu.BasicCrafterMenu;
-import thelm.packagedexcrafting.menu.CombinationCrafterMenu;
-import thelm.packagedexcrafting.menu.EliteCrafterMenu;
-import thelm.packagedexcrafting.menu.EnderCrafterMenu;
-import thelm.packagedexcrafting.menu.FluxCrafterMenu;
-import thelm.packagedexcrafting.menu.UltimateCrafterMenu;
+import thelm.packagedexcrafting.menu.PackagedExCraftingMenus;
 
 public class ClientEventHandler {
 
@@ -32,21 +25,24 @@ public class ClientEventHandler {
 		return INSTANCE;
 	}
 
-	public void onConstruct() {
-		FMLJavaModLoadingContext.get().getModEventBus().register(this);
+	public void onConstruct(IEventBus modEventBus) {
+		modEventBus.register(this);
 	}
 
 	@SubscribeEvent
 	public void onClientSetup(FMLClientSetupEvent event) {
-		MenuScreens.register(BasicCrafterMenu.TYPE_INSTANCE, BasicCrafterScreen::new);
-		MenuScreens.register(AdvancedCrafterMenu.TYPE_INSTANCE, AdvancedCrafterScreen::new);
-		MenuScreens.register(EliteCrafterMenu.TYPE_INSTANCE, EliteCrafterScreen::new);
-		MenuScreens.register(UltimateCrafterMenu.TYPE_INSTANCE, UltimateCrafterScreen::new);
-		MenuScreens.register(EnderCrafterMenu.TYPE_INSTANCE, EnderCrafterScreen::new);
-		MenuScreens.register(FluxCrafterMenu.TYPE_INSTANCE, FluxCrafterScreen::new);
-		MenuScreens.register(CombinationCrafterMenu.TYPE_INSTANCE, CombinationCrafterScreen::new);
+		BlockEntityRenderers.register(PackagedExCraftingBlockEntities.COMBINATION_CRAFTER.get(), CombinationCrafterRenderer::new);
+		BlockEntityRenderers.register(PackagedExCraftingBlockEntities.MARKED_PEDESTAL.get(), MarkedPedestalRenderer::new);
+	}
 
-		BlockEntityRenderers.register(CombinationCrafterBlockEntity.TYPE_INSTANCE, CombinationCrafterRenderer::new);
-		BlockEntityRenderers.register(MarkedPedestalBlockEntity.TYPE_INSTANCE, MarkedPedestalRenderer::new);
+	@SubscribeEvent
+	public void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+		event.register(PackagedExCraftingMenus.BASIC_CRAFTER.get(), BasicCrafterScreen::new);
+		event.register(PackagedExCraftingMenus.ADVANCED_CRAFTER.get(), AdvancedCrafterScreen::new);
+		event.register(PackagedExCraftingMenus.ELITE_CRAFTER.get(), EliteCrafterScreen::new);
+		event.register(PackagedExCraftingMenus.ULTIMATE_CRAFTER.get(), UltimateCrafterScreen::new);
+		event.register(PackagedExCraftingMenus.ENDER_CRAFTER.get(), EnderCrafterScreen::new);
+		event.register(PackagedExCraftingMenus.FLUX_CRAFTER.get(), FluxCrafterScreen::new);
+		event.register(PackagedExCraftingMenus.COMBINATION_CRAFTER.get(), CombinationCrafterScreen::new);
 	}
 }

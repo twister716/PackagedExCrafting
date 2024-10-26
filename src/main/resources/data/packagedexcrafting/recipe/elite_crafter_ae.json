@@ -1,38 +1,35 @@
 {
-	"conditions": [
+	"neoforge:conditions": [
 		{
-			"type": "forge:mod_loaded",
+			"type": "neoforge:mod_loaded",
 			"modid": "ae2"
 		}
 	],
 	"type": "minecraft:crafting_shaped",
 	"result": {
-		"item": "packagedexcrafting:combination_crafter",
+		"id": "packagedexcrafting:elite_crafter",
 		"count": 1
 	},
 	"pattern": [
-		"ECE",
-		"RTR",
-		"IYI"
+		"ICI",
+		"YTY",
+		"IRI"
 	],
 	"key": {
 		"C": {
 			"item": "packagedauto:me_package_component"
 		},
 		"T": {
-			"item": "extendedcrafting:crafting_core"
+			"item": "extendedcrafting:elite_auto_table"
 		},
 		"I": {
 			"item": "extendedcrafting:black_iron_ingot"
 		},
-		"E": {
-			"item": "extendedcrafting:enhanced_ender_component"
+		"Y": {
+			"item": "extendedcrafting:crystaltine_component"
 		},
 		"R": {
 			"item": "extendedcrafting:redstone_catalyst"
-		},
-		"Y": {
-			"item": "extendedcrafting:crystaltine_catalyst"
 		}
 	}
 }

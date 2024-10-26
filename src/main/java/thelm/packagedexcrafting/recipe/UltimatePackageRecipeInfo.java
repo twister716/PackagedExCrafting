@@ -4,18 +4,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import thelm.packagedauto.api.IPackagePattern;
 import thelm.packagedauto.api.IPackageRecipeType;
@@ -24,44 +29,69 @@ import thelm.packagedauto.util.PackagePattern;
 
 public class UltimatePackageRecipeInfo implements ITablePackageRecipeInfo {
 
-	ITableRecipe recipe;
-	List<ItemStack> input = new ArrayList<>();
-	Container matrix = new SimpleContainer(81);
-	ItemStack output;
-	List<IPackagePattern> patterns = new ArrayList<>();
+	public static final MapCodec<UltimatePackageRecipeInfo> MAP_CODEC = RecordCodecBuilder.mapCodec(instance->instance.group(
+			ResourceLocation.CODEC.fieldOf("id").forGetter(UltimatePackageRecipeInfo::getRecipeId),
+			Codec.INT.fieldOf("width").forGetter(UltimatePackageRecipeInfo::getMatrixWidth),
+			Codec.INT.fieldOf("height").forGetter(UltimatePackageRecipeInfo::getMatrixHeight),
+			ItemStack.OPTIONAL_CODEC.orElse(ItemStack.EMPTY).sizeLimitedListOf(81).fieldOf("input").forGetter(UltimatePackageRecipeInfo::getMatrixAsList)).
+			apply(instance, UltimatePackageRecipeInfo::new));
+	public static final Codec<UltimatePackageRecipeInfo> CODEC = MAP_CODEC.codec();
+	public static final StreamCodec<RegistryFriendlyByteBuf, UltimatePackageRecipeInfo> STREAM_CODEC = StreamCodec.composite(
+			ResourceLocation.STREAM_CODEC, UltimatePackageRecipeInfo::getRecipeId,
+			ByteBufCodecs.INT, UltimatePackageRecipeInfo::getMatrixWidth,
+			ByteBufCodecs.INT, UltimatePackageRecipeInfo::getMatrixHeight,
+			ItemStack.OPTIONAL_LIST_STREAM_CODEC, UltimatePackageRecipeInfo::getMatrixAsList,
+			UltimatePackageRecipeInfo::new);
 
-	@Override
-	public void load(CompoundTag nbt) {
-		input.clear();
-		output = ItemStack.EMPTY;
-		patterns.clear();
-		Recipe<?> recipe = MiscHelper.INSTANCE.getRecipeManager().byKey(new ResourceLocation(nbt.getString("Recipe"))).orElse(null);
-		List<ItemStack> matrixList = new ArrayList<>();
-		MiscHelper.INSTANCE.loadAllItems(nbt.getList("Matrix", 10), matrixList);
-		for(int i = 0; i < 81 && i < matrixList.size(); ++i) {
-			matrix.setItem(i, matrixList.get(i));
-		}
-		if(recipe instanceof ITableRecipe tableRecipe) {
-			this.recipe = tableRecipe;
-			output = this.recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
-		}
-		input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
+	private final ResourceLocation id;
+	private final ITableRecipe recipe;
+	private final List<ItemStack> input;
+	private final TableCraftingInput matrix;
+	private final ItemStack output;
+	private final List<IPackagePattern> patterns = new ArrayList<>();
+
+	public UltimatePackageRecipeInfo(ResourceLocation id, int width, int height, List<ItemStack> matrixSer) {
+		this.id = id;
+		matrix = TableCraftingInput.of(width, height, matrixSer, 2);
+		input = MiscHelper.INSTANCE.condenseStacks(matrix.items());
 		for(int i = 0; i*9 < input.size(); ++i) {
 			patterns.add(new PackagePattern(this, i));
 		}
+		Recipe<?> recipeSer = MiscHelper.INSTANCE.getRecipeManager().byKey(id).map(RecipeHolder::value).orElse(null);
+		if(recipeSer instanceof ITableRecipe tableRecipe) {
+			recipe = tableRecipe;
+			output = recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
+		}
+		else {
+			recipe = null;
+			output = ItemStack.EMPTY;
+		}
 	}
 
-	@Override
-	public void save(CompoundTag nbt) {
-		if(recipe != null) {
-			nbt.putString("Recipe", recipe.getId().toString());
-		}
-		List<ItemStack> matrixList = new ArrayList<>();
+	public UltimatePackageRecipeInfo(List<ItemStack> inputs, Level level) {
+		NonNullList<ItemStack> matrixList = NonNullList.withSize(81, ItemStack.EMPTY);
+		int[] slotArray = UltimatePackageRecipeType.SLOTS.toIntArray();
 		for(int i = 0; i < 81; ++i) {
-			matrixList.add(matrix.getItem(i));
+			ItemStack toSet = inputs.get(slotArray[i]);
+			toSet.setCount(1);
+			matrixList.set(i, toSet.copy());
 		}
-		ListTag matrixTag = MiscHelper.INSTANCE.saveAllItems(new ListTag(), matrixList);
-		nbt.put("Matrix", matrixTag);
+		matrix = TableCraftingInput.of(9, 9, matrixList, 4);
+		RecipeHolder<ITableRecipe> recipeHolder = MiscHelper.INSTANCE.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, level).orElse(null);
+		if(recipeHolder != null) {
+			id = recipeHolder.id();
+			recipe = recipeHolder.value();
+			output = recipe.assemble(matrix, level.registryAccess()).copy();
+		}
+		else {
+			id = null;
+			recipe = null;
+			output = null;
+		}
+		input = MiscHelper.INSTANCE.condenseStacks(matrix.items());
+		for(int i = 0; i*9 < input.size(); ++i) {
+			this.patterns.add(new PackagePattern(this, i));
+		}
 	}
 
 	@Override
@@ -76,7 +106,7 @@ public class UltimatePackageRecipeInfo implements ITablePackageRecipeInfo {
 
 	@Override
 	public boolean isValid() {
-		return recipe != null;
+		return id != null && recipe != null;
 	}
 
 	@Override
@@ -99,37 +129,30 @@ public class UltimatePackageRecipeInfo implements ITablePackageRecipeInfo {
 		return recipe;
 	}
 
+	public ResourceLocation getRecipeId() {
+		return id;
+	}
+
 	@Override
-	public Container getMatrix() {
+	public TableCraftingInput getMatrix() {
 		return matrix;
+	}
+
+	public List<ItemStack> getMatrixAsList() {
+		return Collections.unmodifiableList(matrix.items());
+	}
+
+	public int getMatrixWidth() {
+		return matrix.width();
+	}
+
+	public int getMatrixHeight() {
+		return matrix.height();
 	}
 
 	@Override
 	public List<ItemStack> getRemainingItems() {
 		return recipe.getRemainingItems(matrix);
-	}
-
-	@Override
-	public void generateFromStacks(List<ItemStack> input, List<ItemStack> output, Level level) {
-		recipe = null;
-		this.input.clear();
-		patterns.clear();
-		for(int i = 0; i < 81; ++i) {
-			ItemStack toSet = input.get(i);
-			toSet.setCount(1);
-			matrix.setItem(i, toSet.copy());
-		}
-		ITableRecipe recipe = MiscHelper.INSTANCE.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, level).orElse(null);
-		if(recipe != null) {
-			this.recipe = recipe;
-			this.input.addAll(MiscHelper.INSTANCE.condenseStacks(matrix));
-			this.output = recipe.assemble(matrix, MiscHelper.INSTANCE.getRegistryAccess()).copy();
-			for(int i = 0; i*9 < this.input.size(); ++i) {
-				patterns.add(new PackagePattern(this, i));
-			}
-			return;
-		}
-		matrix.clearContent();
 	}
 
 	@Override

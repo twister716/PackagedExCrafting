@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[46,)"
+loaderVersion = "[2,)"
 license = "MIT"
 issueTrackerURL = "https://github.com/TheLMiffy1111/PackagedExCrafting/issues"
 
@@ -13,16 +13,16 @@ issueTrackerURL = "https://github.com/TheLMiffy1111/PackagedExCrafting/issues"
 	displayURL = "https://www.curseforge.com/minecraft/mc-mods/packagedexcrafting"
 
 [[dependencies.packagedexcrafting]]
-	modId = "forge"
-	versionRange = "[46,)"
-	mandatory = true
+	modId = "neoforge"
+	versionRange = "[21,)"
+	type = "required"
 
 [[dependencies.packagedexcrafting]]
 	modId = "packagedauto"
-	versionRange = "[3.4.3,)"
-	mandatory = true
+	versionRange = "[4,)"
+	type = "required"
 
 [[dependencies.packagedexcrafting]]
 	modId = "extendedcrafting"
-	versionRange = "[6,)"
-	mandatory = true
+	versionRange = "[7,)"
+	type = "required"

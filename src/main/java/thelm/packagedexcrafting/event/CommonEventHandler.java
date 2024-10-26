@@ -1,44 +1,23 @@
 package thelm.packagedexcrafting.event;
 
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
+import appeng.api.AECapabilities;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import thelm.packagedauto.block.entity.BaseBlockEntity;
+import thelm.packagedauto.integration.appeng.AppEngUtil;
 import thelm.packagedauto.util.ApiImpl;
-import thelm.packagedexcrafting.block.AdvancedCrafterBlock;
-import thelm.packagedexcrafting.block.BasicCrafterBlock;
-import thelm.packagedexcrafting.block.CombinationCrafterBlock;
-import thelm.packagedexcrafting.block.EliteCrafterBlock;
-import thelm.packagedexcrafting.block.EnderCrafterBlock;
-import thelm.packagedexcrafting.block.FluxCrafterBlock;
-import thelm.packagedexcrafting.block.MarkedPedestalBlock;
-import thelm.packagedexcrafting.block.UltimateCrafterBlock;
-import thelm.packagedexcrafting.block.entity.AdvancedCrafterBlockEntity;
-import thelm.packagedexcrafting.block.entity.BasicCrafterBlockEntity;
-import thelm.packagedexcrafting.block.entity.CombinationCrafterBlockEntity;
-import thelm.packagedexcrafting.block.entity.EliteCrafterBlockEntity;
-import thelm.packagedexcrafting.block.entity.EnderCrafterBlockEntity;
-import thelm.packagedexcrafting.block.entity.FluxCrafterBlockEntity;
-import thelm.packagedexcrafting.block.entity.MarkedPedestalBlockEntity;
-import thelm.packagedexcrafting.block.entity.UltimateCrafterBlockEntity;
+import thelm.packagedauto.util.MiscHelper;
+import thelm.packagedexcrafting.block.PackagedExCraftingBlocks;
+import thelm.packagedexcrafting.block.entity.PackagedExCraftingBlockEntities;
 import thelm.packagedexcrafting.config.PackagedExCraftingConfig;
-import thelm.packagedexcrafting.menu.AdvancedCrafterMenu;
-import thelm.packagedexcrafting.menu.BasicCrafterMenu;
-import thelm.packagedexcrafting.menu.CombinationCrafterMenu;
-import thelm.packagedexcrafting.menu.EliteCrafterMenu;
-import thelm.packagedexcrafting.menu.EnderCrafterMenu;
-import thelm.packagedexcrafting.menu.FluxCrafterMenu;
-import thelm.packagedexcrafting.menu.UltimateCrafterMenu;
+import thelm.packagedexcrafting.creativetab.PackagedExCraftingCreativeTabs;
+import thelm.packagedexcrafting.item.PackagedExCraftingItems;
+import thelm.packagedexcrafting.menu.PackagedExCraftingMenus;
 import thelm.packagedexcrafting.recipe.AdvancedPackageRecipeType;
 import thelm.packagedexcrafting.recipe.BasicPackageRecipeType;
 import thelm.packagedexcrafting.recipe.CombinationPackageRecipeType;
@@ -55,71 +34,15 @@ public class CommonEventHandler {
 		return INSTANCE;
 	}
 
-	public void onConstruct() {
-		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+	public void onConstruct(IEventBus modEventBus) {
 		modEventBus.register(this);
 		PackagedExCraftingConfig.registerConfig();
 
-		DeferredRegister<Block> blockRegister = DeferredRegister.create(Registries.BLOCK, "packagedexcrafting");
-		blockRegister.register(modEventBus);
-		blockRegister.register("basic_crafter", ()->BasicCrafterBlock.INSTANCE);
-		blockRegister.register("advanced_crafter", ()->AdvancedCrafterBlock.INSTANCE);
-		blockRegister.register("elite_crafter", ()->EliteCrafterBlock.INSTANCE);
-		blockRegister.register("ultimate_crafter", ()->UltimateCrafterBlock.INSTANCE);
-		blockRegister.register("ender_crafter", ()->EnderCrafterBlock.INSTANCE);
-		blockRegister.register("flux_crafter", ()->FluxCrafterBlock.INSTANCE);
-		blockRegister.register("combination_crafter", ()->CombinationCrafterBlock.INSTANCE);
-		blockRegister.register("marked_pedestal", ()->MarkedPedestalBlock.INSTANCE);
-
-		DeferredRegister<Item> itemRegister = DeferredRegister.create(Registries.ITEM, "packagedexcrafting");
-		itemRegister.register(modEventBus);
-		itemRegister.register("basic_crafter", ()->BasicCrafterBlock.ITEM_INSTANCE);
-		itemRegister.register("advanced_crafter", ()->AdvancedCrafterBlock.ITEM_INSTANCE);
-		itemRegister.register("elite_crafter", ()->EliteCrafterBlock.ITEM_INSTANCE);
-		itemRegister.register("ultimate_crafter", ()->UltimateCrafterBlock.ITEM_INSTANCE);
-		itemRegister.register("ender_crafter", ()->EnderCrafterBlock.ITEM_INSTANCE);
-		itemRegister.register("flux_crafter", ()->FluxCrafterBlock.ITEM_INSTANCE);
-		itemRegister.register("combination_crafter", ()->CombinationCrafterBlock.ITEM_INSTANCE);
-		itemRegister.register("marked_pedestal", ()->MarkedPedestalBlock.ITEM_INSTANCE);
-
-		DeferredRegister<BlockEntityType<?>> blockEntityRegister = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, "packagedexcrafting");
-		blockEntityRegister.register(modEventBus);
-		blockEntityRegister.register("basic_crafter", ()->BasicCrafterBlockEntity.TYPE_INSTANCE);
-		blockEntityRegister.register("advanced_crafter", ()->AdvancedCrafterBlockEntity.TYPE_INSTANCE);
-		blockEntityRegister.register("elite_crafter", ()->EliteCrafterBlockEntity.TYPE_INSTANCE);
-		blockEntityRegister.register("ultimate_crafter", ()->UltimateCrafterBlockEntity.TYPE_INSTANCE);
-		blockEntityRegister.register("ender_crafter", ()->EnderCrafterBlockEntity.TYPE_INSTANCE);
-		blockEntityRegister.register("flux_crafter", ()->FluxCrafterBlockEntity.TYPE_INSTANCE);
-		blockEntityRegister.register("combination_crafter", ()->CombinationCrafterBlockEntity.TYPE_INSTANCE);
-		blockEntityRegister.register("marked_pedestal", ()->MarkedPedestalBlockEntity.TYPE_INSTANCE);
-
-		DeferredRegister<MenuType<?>> menuRegister = DeferredRegister.create(Registries.MENU, "packagedexcrafting");
-		menuRegister.register(modEventBus);
-		menuRegister.register("basic_crafter", ()->BasicCrafterMenu.TYPE_INSTANCE);
-		menuRegister.register("advanced_crafter", ()->AdvancedCrafterMenu.TYPE_INSTANCE);
-		menuRegister.register("elite_crafter", ()->EliteCrafterMenu.TYPE_INSTANCE);
-		menuRegister.register("ultimate_crafter", ()->UltimateCrafterMenu.TYPE_INSTANCE);
-		menuRegister.register("ender_crafter", ()->EnderCrafterMenu.TYPE_INSTANCE);
-		menuRegister.register("flux_crafter", ()->FluxCrafterMenu.TYPE_INSTANCE);
-		menuRegister.register("combination_crafter", ()->CombinationCrafterMenu.TYPE_INSTANCE);
-
-		DeferredRegister<CreativeModeTab> creativeTabRegister = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "packagedexcrafting");
-		creativeTabRegister.register(modEventBus);
-		creativeTabRegister.register("tab",
-				()->CreativeModeTab.builder().
-				title(Component.translatable("itemGroup.packagedexcrafting")).
-				icon(()->new ItemStack(UltimateCrafterBlock.ITEM_INSTANCE)).
-				displayItems((parameters, output)->{
-					output.accept(BasicCrafterBlock.ITEM_INSTANCE);
-					output.accept(AdvancedCrafterBlock.ITEM_INSTANCE);
-					output.accept(EliteCrafterBlock.ITEM_INSTANCE);
-					output.accept(UltimateCrafterBlock.ITEM_INSTANCE);
-					output.accept(EnderCrafterBlock.ITEM_INSTANCE);
-					output.accept(FluxCrafterBlock.ITEM_INSTANCE);
-					output.accept(CombinationCrafterBlock.ITEM_INSTANCE);
-					output.accept(MarkedPedestalBlock.ITEM_INSTANCE);
-				}).
-				build());
+		PackagedExCraftingBlocks.BLOCKS.register(modEventBus);
+		PackagedExCraftingItems.ITEMS.register(modEventBus);
+		PackagedExCraftingBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+		PackagedExCraftingMenus.MENUS.register(modEventBus);
+		PackagedExCraftingCreativeTabs.CREATIVE_TABS.register(modEventBus);
 	}
 
 	@SubscribeEvent
@@ -134,7 +57,45 @@ public class CommonEventHandler {
 	}
 
 	@SubscribeEvent
-	public void onModConfig(ModConfigEvent event) {
+	public void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
+		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PackagedExCraftingBlockEntities.BASIC_CRAFTER.get(), BaseBlockEntity::getItemHandler);
+		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PackagedExCraftingBlockEntities.ADVANCED_CRAFTER.get(), BaseBlockEntity::getItemHandler);
+		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PackagedExCraftingBlockEntities.ELITE_CRAFTER.get(), BaseBlockEntity::getItemHandler);
+		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PackagedExCraftingBlockEntities.ULTIMATE_CRAFTER.get(), BaseBlockEntity::getItemHandler);
+		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PackagedExCraftingBlockEntities.ENDER_CRAFTER.get(), BaseBlockEntity::getItemHandler);
+		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PackagedExCraftingBlockEntities.FLUX_CRAFTER.get(), BaseBlockEntity::getItemHandler);
+		event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PackagedExCraftingBlockEntities.COMBINATION_CRAFTER.get(), BaseBlockEntity::getItemHandler);
+
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PackagedExCraftingBlockEntities.BASIC_CRAFTER.get(), BaseBlockEntity::getEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PackagedExCraftingBlockEntities.ADVANCED_CRAFTER.get(), BaseBlockEntity::getEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PackagedExCraftingBlockEntities.ELITE_CRAFTER.get(), BaseBlockEntity::getEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PackagedExCraftingBlockEntities.ULTIMATE_CRAFTER.get(), BaseBlockEntity::getEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PackagedExCraftingBlockEntities.ENDER_CRAFTER.get(), BaseBlockEntity::getEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PackagedExCraftingBlockEntities.FLUX_CRAFTER.get(), BaseBlockEntity::getEnergyStorage);
+		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PackagedExCraftingBlockEntities.COMBINATION_CRAFTER.get(), BaseBlockEntity::getEnergyStorage);
+
+		MiscHelper.INSTANCE.conditionalRunnable(()->ModList.get().isLoaded("ae2"), ()->()->{
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.BASIC_CRAFTER.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.ADVANCED_CRAFTER.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.ELITE_CRAFTER.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.ULTIMATE_CRAFTER.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.ENDER_CRAFTER.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.FLUX_CRAFTER.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.COMBINATION_CRAFTER.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+			event.registerBlockEntity(AECapabilities.IN_WORLD_GRID_NODE_HOST, PackagedExCraftingBlockEntities.MARKED_PEDESTAL.get(), (be, v)->AppEngUtil.getAsInWorldGridNodeHost(be));
+		}, ()->()->{}).run();
+	}
+
+	@SubscribeEvent
+	public void onModConfigLoading(ModConfigEvent.Loading event) {
+		switch(event.getConfig().getType()) {
+		case SERVER -> PackagedExCraftingConfig.reloadServerConfig();
+		default -> {}
+		}
+	}
+
+	@SubscribeEvent
+	public void onModConfigReloading(ModConfigEvent.Reloading event) {
 		switch(event.getConfig().getType()) {
 		case SERVER -> PackagedExCraftingConfig.reloadServerConfig();
 		default -> {}

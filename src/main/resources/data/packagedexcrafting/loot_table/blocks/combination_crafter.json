@@ -8,11 +8,14 @@
 					"type": "minecraft:item",
 					"functions": [
 						{
-							"function": "minecraft:copy_name",
+							"function": "minecraft:copy_components",
+							"include": [
+								"minecraft:custom_name"
+							],
 							"source": "block_entity"
 						}
 					],
-					"name": "packagedexcrafting:flux_crafter"
+					"name": "packagedexcrafting:combination_crafter"
 				}
 			],
 			"conditions": [
