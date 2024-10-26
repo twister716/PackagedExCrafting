@@ -2,7 +2,6 @@ package thelm.packagedexcrafting.block.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.google.common.base.Predicates;
 
