@@ -23,7 +23,6 @@ import appeng.util.Platform;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.server.ServerWorld;
 import thelm.packagedauto.integration.appeng.networking.BaseGridBlock;
 import thelm.packagedexcrafting.tile.MarkedPedestalTile;
 
