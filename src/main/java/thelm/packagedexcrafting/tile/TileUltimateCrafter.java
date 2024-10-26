@@ -236,6 +236,9 @@ public class TileUltimateCrafter extends TileBase implements ITickable, IPackage
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
+		if(hostHelper != null) {
+			hostHelper.readFromNBT(nbt);
+		}
 		super.readFromNBT(nbt);
 		isWorking = nbt.getBoolean("Working");
 		remainingProgress = nbt.getInteger("Progress");
@@ -246,9 +249,6 @@ public class TileUltimateCrafter extends TileBase implements ITickable, IPackage
 			if(recipe instanceof IRecipeInfoTiered && ((IRecipeInfoTiered)recipe).getTier() == 4) {
 				currentRecipe = (IRecipeInfoTiered)recipe;
 			}
-		}
-		if(hostHelper != null) {
-			hostHelper.readFromNBT(nbt);
 		}
 	}
 

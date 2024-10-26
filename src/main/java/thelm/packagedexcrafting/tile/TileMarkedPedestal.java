@@ -116,10 +116,10 @@ public class TileMarkedPedestal extends TileBase implements ITickable, IGridHost
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
-		super.readFromNBT(nbt);
 		if(hostHelper != null) {
 			hostHelper.readFromNBT(nbt);
 		}
+		super.readFromNBT(nbt);
 	}
 
 	@Override

@@ -298,6 +298,9 @@ public class TileCombinationCrafter extends TileBase implements ITickable, IPack
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
+		if(hostHelper != null) {
+			hostHelper.readFromNBT(nbt);
+		}
 		super.readFromNBT(nbt);
 		isWorking = nbt.getBoolean("Working");
 		remainingProgress = nbt.getLong("Progress");
@@ -317,9 +320,6 @@ public class TileCombinationCrafter extends TileBase implements ITickable, IPack
 				BlockPos pos = new BlockPos(posArray[0], posArray[1], posArray[2]);
 				pedestals.add(pos);
 			}
-		}
-		if(hostHelper != null) {
-			hostHelper.readFromNBT(nbt);
 		}
 	}
 
