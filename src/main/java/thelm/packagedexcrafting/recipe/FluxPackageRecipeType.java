@@ -24,7 +24,7 @@ public class FluxPackageRecipeType implements IPackageRecipeType {
 	public static final FluxPackageRecipeType INSTANCE = new FluxPackageRecipeType();
 	public static final ResourceLocation NAME = new ResourceLocation("packagedexcrafting:flux");
 	public static final IntSet SLOTS;
-	public static final List<ResourceLocation> CATEGORIES = Collections.singletonList(new ResourceLocation("extendedcrafting:flux_crafting"));
+	public static final List<ResourceLocation> CATEGORIES = List.of(new ResourceLocation("extendedcrafting:flux_crafting"));
 	public static final Vec3i COLOR = new Vec3i(139, 139, 139);
 	public static final Vec3i COLOR_DISABLED = new Vec3i(64, 64, 64);
 
