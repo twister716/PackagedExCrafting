@@ -158,8 +158,10 @@ public class UltimatePackageRecipeInfo implements ITablePackageRecipeInfo {
 	@Override
 	public Int2ObjectMap<ItemStack> getEncoderStacks() {
 		Int2ObjectMap<ItemStack> map = new Int2ObjectOpenHashMap<>();
-		for(int i = 0; i < 81; ++i) {
-			map.put(i, matrix.getItem(i));
+		for(int i = 0; i < matrix.height(); ++i) {
+			for(int j = 0; j < matrix.width(); ++j) {
+				map.put(i*9+j, matrix.getItem(i*matrix.width()+j));
+			}
 		}
 		return map;
 	}

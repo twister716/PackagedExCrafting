@@ -164,8 +164,10 @@ public class FluxPackageRecipeInfo implements IFluxPackageRecipeInfo {
 	public Int2ObjectMap<ItemStack> getEncoderStacks() {
 		Int2ObjectMap<ItemStack> map = new Int2ObjectOpenHashMap<>();
 		int[] slotArray = FluxPackageRecipeType.SLOTS.toIntArray();
-		for(int i = 0; i < 9; ++i) {
-			map.put(slotArray[i], matrix.getItem(i));
+		for(int i = 0; i < matrix.height(); ++i) {
+			for(int j = 0; j < matrix.width(); ++j) {
+				map.put(slotArray[i*3+j], matrix.getItem(i*matrix.width()+j));
+			}
 		}
 		return map;
 	}

@@ -159,8 +159,10 @@ public class AdvancedPackageRecipeInfo implements ITablePackageRecipeInfo {
 	public Int2ObjectMap<ItemStack> getEncoderStacks() {
 		Int2ObjectMap<ItemStack> map = new Int2ObjectOpenHashMap<>();
 		int[] slotArray = AdvancedPackageRecipeType.SLOTS.toIntArray();
-		for(int i = 0; i < 25; ++i) {
-			map.put(slotArray[i], matrix.getItem(i));
+		for(int i = 0; i < matrix.height(); ++i) {
+			for(int j = 0; j < matrix.width(); ++j) {
+				map.put(slotArray[i*5+j], matrix.getItem(i*matrix.width()+j));
+			}
 		}
 		return map;
 	}

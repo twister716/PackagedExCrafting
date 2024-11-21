@@ -1,1 +1,1 @@
-Fix AE2 grid node data reading  
+Fix loading table recipes into encoder  
